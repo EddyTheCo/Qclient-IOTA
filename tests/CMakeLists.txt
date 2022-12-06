@@ -49,7 +49,7 @@ FetchContent_Declare(
         GIT_TAG main
         )
 FetchContent_MakeAvailable(qed25519)
-
+option(USE_SODIUM "On or off" ON)
 qt_add_executable(full_block_with_transaction_payload
         full_block_with_transaction_payload.cpp
         )
