@@ -1,0 +1,27 @@
+#include"client/qnode_info.hpp"
+#include<QDataStream>
+#include<QJsonObject>
+#include<QDebug>
+namespace qiota{
+
+
+Node_info::Node_info(Response* resp):response_(resp)
+{
+    QObject::connect(resp, &Response::returned,this, &Node_info::fill);
+}
+void Node_info::fill(QJsonValue data)
+{
+    network_name_=QByteArray(data["protocol"].toObject()["networkName"].toString().toLatin1());
+    QByteArray networkId_hash=QCryptographicHash::hash(network_name_,QCryptographicHash::Blake2b_256);
+    networkId_hash.truncate(8);
+    auto buffer=QDataStream(&networkId_hash,QIODevice::ReadOnly);
+    buffer.setByteOrder(QDataStream::LittleEndian);
+    buffer>>network_id_;
+
+    protocol_version=(data["protocol"].toObject())["version"].toInt();
+    min_pow_score=(data["protocol"].toObject())["minPowScore"].toInteger();
+    emit finished();
+    response_->deleteLater();
+}
+
+}

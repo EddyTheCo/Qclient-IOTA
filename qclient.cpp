@@ -1,26 +1,9 @@
 #include"client/qclient.hpp"
+#include"pow/qpow.hpp"
 #include<QJsonDocument>
 #include<QJsonObject>
 #include<iostream>
 namespace qiota{
-
-Response::Response(QNetworkReply *thereply):reply(thereply)
-{
-    QObject::connect(reply, &QNetworkReply::finished,this, &Response::fill);
-    QObject::connect(reply, &QNetworkReply::errorOccurred,this, &Response::error_found);
-}
-void Response::fill()
-{
-    QByteArray response_data = reply->readAll();
-    auto data = (QJsonDocument::fromJson(response_data)).object();
-    emit returned(data);
-    reply->deleteLater();
-}
-void Response::error_found(QNetworkReply::NetworkError code)
-{
-    auto errorreply=reply->errorString();
-    qDebug()<<"Error:"<<errorreply;
-}
 
 Client::Client(const QUrl& rest_node_address):
     rest_node_address_(rest_node_address),nam(new QNetworkAccessManager())
@@ -40,24 +23,59 @@ Response*  Client::post_reply_rest(const QString& path, const QJsonObject& paylo
     InfoUrl.setPath(path);
     auto request=QNetworkRequest(InfoUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    qDebug().noquote()<<"payload:\n"<<QString(QJsonDocument(payload).toJson(QJsonDocument::Indented));
     return new Response(nam->post(request,QJsonDocument(payload).toJson()));
 }
-Response* Client::get_api_core_v2_info()const
+Node_info* Client::get_api_core_v2_info(void)const
 {
-    return get_reply_rest("/api/core/v2/info");
+    return new Node_info(get_reply_rest("/api/core/v2/info"));
 }
-Response* Client::get_api_core_v2_tips()const
+Node_tips* Client::get_api_core_v2_tips()const
 {
-    return get_reply_rest("/api/core/v2/tips");
+    return new Node_tips(get_reply_rest("/api/core/v2/tips"));
 }
-Response* Client::post_api_core_v2_blocks(const QJsonObject& block_)const
+Node_blockID* Client::post_api_core_v2_blocks(const QJsonObject& block_)const
 {
-    return post_reply_rest("/api/core/v2/blocks",block_);
+    qDebug().noquote()<<"block_.finished:\n"<<QString(QJsonDocument(block_).toJson(QJsonDocument::Indented));
+    return new Node_blockID(post_reply_rest("/api/core/v2/blocks",block_));
 }
-Response* Client::get_api_core_v2_blocks_blockId(const QString& blockId)const
+Node_block* Client::get_api_core_v2_blocks_blockId(const QString& blockId)const
 {
-    return get_reply_rest("/api/core/v2/blocks/"+blockId);
+    return new Node_block(get_reply_rest("/api/core/v2/blocks/"+blockId));
 }
+
+void Client::send_block(const qblocks::Block& block_)const
+{
+    auto node_block_=new Node_block(block_);
+    auto info_=get_api_core_v2_info();
+    auto tips_=get_api_core_v2_tips();
+    auto nfinder_=new qpow::nonceFinder();
+    QObject::connect(info_,&Node_info::finished,node_block_,[=](){node_block_->set_pv(info_->protocol_version);});
+    QObject::connect(info_,&Node_info::finished,nfinder_,[=](){nfinder_->set_Min_Pow_Score(info_->min_pow_score);
+        info_->deleteLater();
+    });
+    QObject::connect(tips_,&Node_tips::finished,node_block_,[=](){node_block_->set_parents(tips_->tips);
+        tips_->deleteLater();
+    });
+    QObject::connect(node_block_,&Node_block::ready,nfinder_,&qpow::nonceFinder::calculate);
+    QObject::connect(nfinder_,&qpow::nonceFinder::nonce_found,node_block_,&Node_block::set_nonce);
+    QObject::connect(nfinder_,&qpow::nonceFinder::nonce_found,nfinder_,[=](){nfinder_->deleteLater();});
+
+
+    QObject::connect(node_block_,&Node_block::finished,this,[=](){
+
+        auto blockid_=Client::post_api_core_v2_blocks(node_block_->block_.get_Json());
+        node_block_->deleteLater();
+        QObject::connect(blockid_,&Node_blockID::finished,this,[=](){
+            emit last_blockid(blockid_->id);
+            blockid_->deleteLater();
+        });
+    });
+
+
+}
+
+
 Response* Client::get_api_core_v2_blocks_blockId_metadata(const QString& blockId)const
 {
     return get_reply_rest("/api/core/v2/blocks/"+blockId+"/metadata");
@@ -74,4 +92,5 @@ Response* Client::get_api_indexer_v1_outputs_basic(const QString& filter)const
 {
     return get_reply_rest("/api/indexer/v1/outputs/basic",filter);
 }
+
 }

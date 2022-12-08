@@ -17,7 +17,24 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 
-add_library(qclient include/client/qclient.hpp qclient.cpp)
+add_library(qclient qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qnode_tips.cpp src/qnode_blockId.cpp src/qnode_block.cpp
+    include/client/qnode_response.hpp include/client/qnode_info.hpp include/client/qnode_tips.hpp include/client/qclient.hpp include/client/qnode_blockId.hpp include/client/qnode_block.hpp
+)
+include(FetchContent)
+FetchContent_Declare(
+        qblock
+        GIT_REPOSITORY git@github.com:EddyTheCo/Qblock-IOTA.git
+        GIT_TAG main
+        )
+FetchContent_MakeAvailable(qblock)
+FetchContent_Declare(
+        qpow
+        GIT_REPOSITORY git@github.com:EddyTheCo/Qpow-IOTA.git
+        GIT_TAG main
+        )
+FetchContent_MakeAvailable(qpow)
+target_link_libraries(qclient PUBLIC qblock)
+target_link_libraries(qclient PRIVATE qpow)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Network)
 target_link_libraries(qclient PUBLIC  Qt6::Core Qt6::Network)
