@@ -9,6 +9,7 @@
 #include"client/qnode_tips.hpp"
 #include"client/qnode_blockId.hpp"
 #include"client/qnode_block.hpp"
+#include"client/qnode_outputs.hpp"
 #include <QNetworkAccessManager>
 #include <QString>
 
@@ -23,6 +24,9 @@ public:
 
 
     void send_block(const qblocks::Block& block_)const;
+    void get_basic_outputs(Node_outputs* node_outs_,const QString& filter)const;
+
+    Node_info* get_api_core_v2_info(void)const;
 
 signals:
 void last_blockid(qblocks::c_array id)const;
@@ -31,7 +35,7 @@ private:
     Response*  get_reply_rest(const QString& path, const QString &query="")const;
     Response*  post_reply_rest(const QString& path, const QJsonObject& payload )const;
 
-    Node_info* get_api_core_v2_info(void)const;
+
     Node_tips* get_api_core_v2_tips(void)const;
     Node_blockID* post_api_core_v2_blocks(const QJsonObject& block_)const;
     Node_block* get_api_core_v2_blocks_blockId(const QString& blockId)const;
@@ -42,7 +46,6 @@ private:
     Response* get_api_indexer_v1_outputs_basic(const QString& filter)const;
 
 
-    Node_info* info;
     QUrl rest_node_address_;
     QNetworkAccessManager* nam;
 };

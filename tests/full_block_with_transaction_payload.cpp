@@ -22,6 +22,9 @@ int main(int argc, char** argv)
 
     QCoreApplication a(argc, argv);
     auto iota=new Client(QUrl("https://api.testnet.shimmer.network"));
+    QObject::connect(iota,&Client::last_blockid,&a,[=](c_array id){
+        qDebug()<<"id:"<<id.toHexString();
+    });
 
     auto seed=QByteArray::fromHex("ef4593558d0c3ed9e3f7a2de766d33093cd72372c800fa47ab5765c43ca006b5");
 
@@ -30,138 +33,74 @@ int main(int argc, char** argv)
     auto keys=MK.slip10_key_from_path(path);
 
     const auto edkeys=qed25519::create_keypair(keys.secret_key());
-    QByteArray publ=QCryptographicHash::hash(edkeys.first,QCryptographicHash::Blake2b_256);
+    QByteArray publ=c_array(QCryptographicHash::hash(edkeys.first,QCryptographicHash::Blake2b_256));
 
-    QVector<quint32> path2={44,4219,0,0,1};
-    auto MK2=Master_key(seed);
-    auto keys2=MK.slip10_key_from_path(path2);
-
-    const auto edkeys2=qed25519::create_keypair(keys2.secret_key());
-    QByteArray publ2=QCryptographicHash::hash(edkeys2.first,QCryptographicHash::Blake2b_256);
 
     auto pub=publ;
     pub.push_front('\x00');
-    qDebug()<<pub.toHex();
+
 
     auto address=Iota::encode("rms",pub);
     qDebug()<<address;
-
-    auto node_info=iota->get_api_core_v2_info();
-
-    QObject::connect(node_info,&Response::returned,node_info,[=](QJsonValue data ){
-
-        quint64 networkId;
-        auto networkname=QByteArray(data["protocol"].toObject()["networkName"].toString().toLatin1());
+    auto eddAddr=std::shared_ptr<Address>(new Ed25519_Address(publ));
 
 
-        QByteArray networkId_hash=QCryptographicHash::hash(networkname,QCryptographicHash::Blake2b_256);
-        networkId_hash.truncate(8);
+    auto node_outputs_=new Node_outputs();
+    iota->get_basic_outputs(node_outputs_,"address="+address+"&hasStorageDepositReturn=false&hasTimelock=false&hasExpiration=false");
 
-        auto buffer=QDataStream(&networkId_hash,QIODevice::ReadOnly);
-        buffer.setByteOrder(QDataStream::LittleEndian);
+    QObject::connect(node_outputs_,&Node_outputs::finished,iota,[=]( ){
+        std::vector<std::shared_ptr<qblocks::Input>> inputs;
+        c_array Inputs_Commitments;
+        quint64 amount=0;
+        for(auto i=0;i<node_outputs_->outs_.size();i++)
+        {
+            inputs.push_back(std::shared_ptr<qblocks::Input>(new qblocks::UTXO_Input(node_outputs_->transids_[i],
+                                                                                  node_outputs_->outputIndexs_[i])));
+            c_array prevOutputSer;
+            prevOutputSer.from_object<qblocks::Output>(*(node_outputs_->outs_[i]));
+            auto Inputs_Commitment1=QCryptographicHash::hash(prevOutputSer, QCryptographicHash::Blake2b_256);
+            Inputs_Commitments.append(Inputs_Commitment1);
+            amount+=std::dynamic_pointer_cast<qblocks::Basic_Output>(node_outputs_->outs_[i])->amount();
+        }
+        qDebug()<<"total amount:"<<amount;
+        auto Inputs_Commitment=c_array(QCryptographicHash::hash(Inputs_Commitments, QCryptographicHash::Blake2b_256));
+        auto sendFea=std::shared_ptr<qblocks::Feature>(new Sender_Feature(eddAddr));
+        //auto tagFea=new Tag_Feature(fl_array<quint8>("tag from IOTA-QT"));
+        //auto metFea=new Metadata_Feature(fl_array<quint16>("data from IOTA-QT"));
 
-        buffer>>networkId;
+        auto addUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Address_Unlock_Condition(eddAddr));
+        auto BaOut= std::shared_ptr<qblocks::Output>(new Basic_Output(amount,{addUnlcon},{sendFea},{}));
 
-        auto pv=(data["protocol"].toObject())["version"].toInt();
-        auto minPowScore=(data["protocol"].toObject())["minPowScore"].toInt();
+        auto info=iota->get_api_core_v2_info();
+        QObject::connect(info,&Node_info::finished,iota,[=]( ){
+            auto essence=std::shared_ptr<qblocks::Essence>(new Transaction_Essence(info->network_id_,inputs,Inputs_Commitment,{BaOut},nullptr));
 
+            c_array serializedEssence;
+            serializedEssence.from_object<Essence>(*essence);
 
-        auto outputids=iota->get_api_indexer_v1_outputs_basic("address="+address);
+            auto essence_hash=QCryptographicHash::hash(serializedEssence, QCryptographicHash::Blake2b_256);
+            const auto sign_t=qed25519::sign(edkeys,essence_hash);
 
+            auto signature_t=std::shared_ptr<qblocks::Signature>(new Ed25519_Signature(public_key(edkeys.first),
+                                                   signature(sign_t)));
 
-        QObject::connect(outputids,&Response::returned,outputids,[=](QJsonValue data ){
-            std::vector<transaction_id> outids;
-            auto transid=data["items"].toArray();
+            auto Sigunlock=std::shared_ptr<qblocks::Unlock>(new Signature_Unlock(signature_t));
 
-            auto output=iota->get_api_core_v2_outputs_outputId(transid[0].toString());
+            auto trpay=std::shared_ptr<qblocks::Payload>(new Transaction_Payload(essence,{Sigunlock}));
 
-            QObject::connect(output,&Response::returned,output,[=](QJsonValue data ){
-                auto transid=transaction_id(data["metadata"].toObject()["transactionId"]);
-
-                quint16 outputIndex=data["metadata"].toObject()["outputIndex"].toInt();
-
-                auto prevOutput=Output::from_Json(data["output"]);
-
-                auto input=new UTXO_Input(transid,outputIndex);
-                c_array prevOutputSer;
-                prevOutput->serialize(*prevOutputSer.get_buffer());
-                auto Inputs_Commitment1=QCryptographicHash::hash(prevOutputSer, QCryptographicHash::Blake2b_256);
-
-                const auto Inputs_Commitment=QCryptographicHash::hash(Inputs_Commitment1, QCryptographicHash::Blake2b_256);
-
-                auto eddAddr=new Ed25519_Address(c_array(publ));
-
-                auto sendFea=new Sender_Feature(eddAddr);
-                //auto tagFea=new Tag_Feature(fl_array<quint8>("tag from IOTA-QT"));
-                //auto metFea=new Metadata_Feature(fl_array<quint16>("data from IOTA-QT"));
-                auto addUnlcon=new Address_Unlock_Condition(eddAddr);
-
-                auto BaOut=new Basic_Output(1000000000,{addUnlcon},{sendFea},{});
-
-
-                auto essence=new Transaction_Essence(networkId,{input},c_array(Inputs_Commitment),{BaOut},nullptr);
-
-                c_array serializedEssence;
-                essence->serialize(*serializedEssence.get_buffer());
-
-                auto essence_hash=QCryptographicHash::hash(serializedEssence, QCryptographicHash::Blake2b_256);
-                const auto sign_t=qed25519::sign(edkeys,essence_hash);
-
-                auto signature_t=new Ed25519_Signature(public_key(edkeys.first),
-                                                       signature(sign_t));
-
-                auto Sigunlock=new Signature_Unlock(signature_t);
-
-                auto trpay=new Transaction_Payload(essence,{Sigunlock});
-
-
-                auto block_= new Block(trpay);
-
-                block_->set_pv(pv);
-
-                auto parents=iota->get_api_core_v2_tips();
-
-                QObject::connect(parents,&Response::returned,parents,[=](QJsonValue data ){
-                    auto tips=(data["tips"].toArray());
-
-                    std::vector<block_id> parents;
-                    for(auto v:tips)parents.push_back(block_id(v));
-                    block_->set_parents(parents);
-
-
-
-                    c_array serialized_block;
-                    (*serialized_block.get_buffer())<(*block_);
-
-
-                    auto nfinder=new nonceFinder();
-                    nfinder->calculate(serialized_block,minPowScore);
-
-                    QObject::connect(nfinder,&nonceFinder::nonce_found,nfinder,[=](const quint64 &s){
-
-                        block_->set_nonce(s);
-                        qDebug().noquote()<<"block:\n"<<QString(QJsonDocument(block_->get_Json()).toJson(QJsonDocument::Indented));
-
-                        auto res=iota->post_api_core_v2_blocks(block_->get_Json());
-
-
-
-                        QObject::connect(res,&Response::returned,[](QJsonValue data ){
-                            qDebug()<<"data:"<<data;
-                        });
-
-                    });
-
-
-
-                });
-
-
-            });
+            auto block_=Block(trpay);
+             iota->send_block(block_);
 
         });
 
-});
+
+
+
+
+    });
+
+
+
 
         return a.exec();
     }

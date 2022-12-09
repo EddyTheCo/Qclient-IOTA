@@ -23,6 +23,7 @@ signals:
     void ready(qblocks::c_array serial_block);
 
 private:
+    void emitready(void);
     bool pv_set,parents_set;
     Response* response_;
 };

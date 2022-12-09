@@ -34,7 +34,7 @@ Node_tips* Client::get_api_core_v2_tips()const
 {
     return new Node_tips(get_reply_rest("/api/core/v2/tips"));
 }
-Node_blockID* Client::post_api_core_v2_blocks(const QJsonObject& block_)const
+Node_blockID *Client::post_api_core_v2_blocks(const QJsonObject& block_)const
 {
     qDebug().noquote()<<"block_.finished:\n"<<QString(QJsonDocument(block_).toJson(QJsonDocument::Indented));
     return new Node_blockID(post_reply_rest("/api/core/v2/blocks",block_));
@@ -72,6 +72,25 @@ void Client::send_block(const qblocks::Block& block_)const
         });
     });
 
+
+}
+void Client::get_basic_outputs(Node_outputs* node_outs_,const QString& filter)const
+{
+    auto outputids=get_api_indexer_v1_outputs_basic(filter);
+    QObject::connect(outputids,&Response::returned,this,[=](QJsonValue data ){
+        auto transid=data["items"].toArray();
+        node_outs_->size_+=transid.size();
+        outputids->deleteLater();
+        for(auto v:transid)
+        {
+            auto output=get_api_core_v2_outputs_outputId(v.toString());
+            QObject::connect(output,&Response::returned,node_outs_,[=](QJsonValue data){
+                node_outs_->fill(data);
+                output->deleteLater();
+            });
+        }
+
+    });
 
 }
 
