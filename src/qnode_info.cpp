@@ -20,6 +20,7 @@ void Node_info::fill(QJsonValue data)
 
     protocol_version=(data["protocol"].toObject())["version"].toInt();
     min_pow_score=(data["protocol"].toObject())["minPowScore"].toInteger();
+    bech32Hrp=(data["protocol"].toObject())["bech32Hrp"].toString();
     emit finished();
     response_->deleteLater();
 }
