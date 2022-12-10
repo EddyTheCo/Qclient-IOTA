@@ -21,14 +21,12 @@ int main(int argc, char** argv)
     auto payload_=std::shared_ptr<Payload>(new Tagged_Data_Payload(tag_,data_));
     auto block_=Block(payload_);
 
-for(auto i=0;i<125;i++)
-{
     iota->send_block(block_);
 
     QObject::connect(iota,&Client::last_blockid,&a,[=](c_array id){
         qDebug()<<"id:"<<id.toHexString();
     });
 
-}
+
     return a.exec();
 }

@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     auto keys=MK.slip10_key_from_path(path);
 
     const auto edkeys=qed25519::create_keypair(keys.secret_key());
-    QByteArray publ=c_array(QCryptographicHash::hash(edkeys.first,QCryptographicHash::Blake2b_256));
+    auto publ=c_array(QCryptographicHash::hash(edkeys.first,QCryptographicHash::Blake2b_256));
 
 
     auto pub=publ;
@@ -65,11 +65,11 @@ int main(int argc, char** argv)
         qDebug()<<"total amount:"<<amount;
         auto Inputs_Commitment=c_array(QCryptographicHash::hash(Inputs_Commitments, QCryptographicHash::Blake2b_256));
         auto sendFea=std::shared_ptr<qblocks::Feature>(new Sender_Feature(eddAddr));
-        //auto tagFea=new Tag_Feature(fl_array<quint8>("tag from IOTA-QT"));
+        auto tagFea=std::shared_ptr<qblocks::Feature>(new Tag_Feature(fl_array<quint8>("tag from IOTA-QT")));
         //auto metFea=new Metadata_Feature(fl_array<quint16>("data from IOTA-QT"));
 
         auto addUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Address_Unlock_Condition(eddAddr));
-        auto BaOut= std::shared_ptr<qblocks::Output>(new Basic_Output(amount,{addUnlcon},{sendFea},{}));
+        auto BaOut= std::shared_ptr<qblocks::Output>(new Basic_Output(amount,{addUnlcon},{sendFea,tagFea},{}));
 
         auto info=iota->get_api_core_v2_info();
         QObject::connect(info,&Node_info::finished,iota,[=]( ){
