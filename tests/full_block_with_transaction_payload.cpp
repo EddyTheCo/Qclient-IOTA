@@ -6,6 +6,7 @@
 #include"crypto/qslip10.hpp"
 #include<iostream>
 #include <QCoreApplication>
+#include <QCryptographicHash>
 #include<QJsonDocument>
 #undef NDEBUG
 #include <assert.h>

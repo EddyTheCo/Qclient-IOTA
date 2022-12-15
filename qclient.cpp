@@ -59,8 +59,7 @@ void Client::send_block(const qblocks::Block& block_)const
     });
     QObject::connect(node_block_,&Node_block::ready,nfinder_,&qpow::nonceFinder::calculate);
     QObject::connect(nfinder_,&qpow::nonceFinder::nonce_found,node_block_,&Node_block::set_nonce);
-    QObject::connect(nfinder_,&qpow::nonceFinder::nonce_found,nfinder_,[=](){nfinder_->deleteLater();});
-
+    QObject::connect(nfinder_,&qpow::nonceFinder::nonce_found,nfinder_,&QObject::deleteLater);
 
     QObject::connect(node_block_,&Node_block::finished,this,[=](){
 

@@ -21,7 +21,10 @@ qt_add_executable(full_block_with_tagged_data_payload
         full_block_with_tagged_data_payload.cpp
         )
 
-add_test(NAME full_block_with_tagged_data_payload COMMAND full_block_with_tagged_data_payload)
+if(EMSCRIPTEN)
+	target_compile_options(full_block_with_tagged_data_payload PRIVATE -pthread )
+	target_link_options(full_block_with_tagged_data_payload PRIVATE -pthread -sPTHREAD_POOL_SIZE=32 )
+endif()
 target_link_libraries(full_block_with_tagged_data_payload PRIVATE qclient qpow)
 
 
@@ -46,8 +49,8 @@ FetchContent_Declare(
         )
 FetchContent_MakeAvailable(qed25519)
 
-qt_add_executable(full_block_with_transaction_payload
-        full_block_with_transaction_payload.cpp
-        )
-add_test(NAME full_block_with_transaction_payload COMMAND full_block_with_transaction_payload)
-target_link_libraries(full_block_with_transaction_payload PRIVATE qclient qpow qed25519 qslip10 qbech32)
+#qt_add_executable(full_block_with_transaction_payload
+#        full_block_with_transaction_payload.cpp
+#        )
+#add_test(NAME full_block_with_transaction_payload COMMAND full_block_with_transaction_payload)
+#target_link_libraries(full_block_with_transaction_payload PRIVATE qclient qpow qed25519 qslip10 qbech32)
