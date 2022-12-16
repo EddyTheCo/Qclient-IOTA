@@ -2,6 +2,7 @@
 #include<QDataStream>
 #include<QJsonObject>
 #include<QDebug>
+#include <QCryptographicHash>
 namespace qiota{
 
 
