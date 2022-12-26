@@ -15,7 +15,6 @@ public slots:
     void error_found(QNetworkReply::NetworkError code);
 signals:
     void returned( QJsonValue data );
-    void finished(void);
 private:
     QNetworkReply *reply;
 
