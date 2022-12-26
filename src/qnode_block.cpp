@@ -24,7 +24,7 @@ void Node_block::emitready(void)
 void Node_block::set_pv(const quint8& pv){
     block_.set_pv(pv);
     pv_set=true;
-    qDebug().noquote()<<"block_.set_pv:\n"<<QString(QJsonDocument(block_.get_Json()).toJson(QJsonDocument::Indented));
+    //qDebug().noquote()<<"block_.set_pv:\n"<<QString(QJsonDocument(block_.get_Json()).toJson(QJsonDocument::Indented));
     if(parents_set)
     {
         emitready();
@@ -34,7 +34,7 @@ void Node_block::set_parents(const std::vector<qblocks::block_id>& parents_m)
 {
     block_.set_parents(parents_m);
     parents_set=true;
-    qDebug().noquote()<<"block_.set_parents:\n"<<QString(QJsonDocument(block_.get_Json()).toJson(QJsonDocument::Indented));
+    //qDebug().noquote()<<"block_.set_parents:\n"<<QString(QJsonDocument(block_.get_Json()).toJson(QJsonDocument::Indented));
     if(pv_set)
     {
        emitready();
