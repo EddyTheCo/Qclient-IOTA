@@ -23,7 +23,6 @@ Response*  Client::post_reply_rest(const QString& path, const QJsonObject& paylo
     InfoUrl.setPath(path);
     auto request=QNetworkRequest(InfoUrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    qDebug().noquote()<<"payload:\n"<<QString(QJsonDocument(payload).toJson(QJsonDocument::Indented));
     return new Response(nam->post(request,QJsonDocument(payload).toJson()));
 }
 Node_info* Client::get_api_core_v2_info(void)const
@@ -36,7 +35,6 @@ Node_tips* Client::get_api_core_v2_tips()const
 }
 Node_blockID *Client::post_api_core_v2_blocks(const QJsonObject& block_)const
 {
-    qDebug().noquote()<<"block_.finished:\n"<<QString(QJsonDocument(block_).toJson(QJsonDocument::Indented));
     return new Node_blockID(post_reply_rest("/api/core/v2/blocks",block_));
 }
 Node_block* Client::get_api_core_v2_blocks_blockId(const QString& blockId)const
