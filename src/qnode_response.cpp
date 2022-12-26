@@ -10,17 +10,26 @@ Response::Response(QNetworkReply *thereply):reply(thereply)
 }
 void Response::fill()
 {
-    QByteArray response_data = reply->readAll();
-    auto data = (QJsonDocument::fromJson(response_data)).object();
-    emit returned(data);
-    emit finished();
-    reply->deleteLater();
+    if(!reply->error())
+    {
+        QByteArray response_data = reply->readAll();
+        auto data = (QJsonDocument::fromJson(response_data)).object();
+        emit returned(data);
+        reply->deleteLater();
+    }
+    else
+    {
+        reply->deleteLater();
+        deleteLater();
+    }
+
 }
 void Response::error_found(QNetworkReply::NetworkError code)
 {
     auto errorreply=reply->errorString();
     qDebug()<<"Error:"<<errorreply;
     qDebug()<<"code:"<<code;
+
 }
 
 

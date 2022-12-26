@@ -76,7 +76,7 @@ void Client::send_block(const qblocks::Block& block_)const
 void Client::get_basic_outputs(Node_outputs* node_outs_,const QString& filter)const
 {
     auto outputids=get_api_indexer_v1_outputs_basic(filter);
-    QObject::connect(outputids,&Response::returned,this,[=](QJsonValue data ){
+    QObject::connect(outputids,&Response::returned,node_outs_,[=](QJsonValue data ){
         auto transid=data["items"].toArray();
         node_outs_->size_+=transid.size();
         outputids->deleteLater();
