@@ -61,7 +61,11 @@ void Client::send_block(const qblocks::Block& block_)const
     QObject::connect(node_block_,&Node_block::ready,nfinder_,&qpow::nonceFinder::calculate);
     QObject::connect(nfinder_,&qpow::nonceFinder::nonce_found,node_block_,&Node_block::set_nonce);
     QObject::connect(nfinder_,&qpow::nonceFinder::nonce_found,nfinder_,&QObject::deleteLater);
-
+    QObject::connect(nfinder_,&qpow::nonceFinder::nonce_not_found,this,[=](){
+        node_block_->deleteLater();
+        nfinder_->deleteLater();
+        send_block(block_);
+    });
     QObject::connect(node_block_,&Node_block::finished,this,[=](){
 
         auto blockid_=Client::post_api_core_v2_blocks(node_block_->block_.get_Json());
