@@ -7,12 +7,15 @@ Node_outputs::Node_outputs(void):size_(0)
 {
 
 }
+Node_output::Node_output(QJsonValue data):metadata_(data["metadata"]),out_(qblocks::Output::from_<const QJsonValue>(data["output"]))
+{
+
+}
 void Node_outputs::fill(QJsonValue data)
 {
-    qDebug()<<"isSpent"<<data["metadata"].toObject()["isSpent"].toBool();
+
 if(!(data["metadata"].toObject()["isSpent"].toBool()))
 {
-    qDebug()<<"isnotSpent";
     transids_.push_back(qblocks::transaction_id(data["metadata"].toObject()["transactionId"]));
     outputIndexs_.push_back(data["metadata"].toObject()["outputIndex"].toInt());
     outs_.push_back(qblocks::Output::from_<const QJsonValue>(data["output"]));
@@ -21,7 +24,13 @@ else
 {
     size_--;
 }
-    if(outs_.size()==size_)emit finished();
+
+
+    if(outs_.size()==size_)
+    {
+
+        emit finished();
+    }
 
 }
 }
