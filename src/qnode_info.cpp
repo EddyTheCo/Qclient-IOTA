@@ -22,6 +22,12 @@ void Node_info::fill(QJsonValue data)
     protocol_version=(data["protocol"].toObject())["version"].toInt();
     min_pow_score=(data["protocol"].toObject())["minPowScore"].toInteger();
     bech32Hrp=(data["protocol"].toObject())["bech32Hrp"].toString();
+
+    const auto rentStructure=(data["protocol"].toObject())["rentStructure"].toObject();
+    vByteFactorKey=rentStructure["vByteFactorKey"].toInteger();
+    vByteFactorData=rentStructure["vByteFactorData"].toInteger();
+    vByteCost=rentStructure["vByteCost"].toInteger();
+
     emit finished();
     response_->deleteLater();
 }

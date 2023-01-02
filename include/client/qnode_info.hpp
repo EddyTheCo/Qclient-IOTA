@@ -15,6 +15,7 @@ public:
     quint8  protocol_version;
     quint32 min_pow_score;
     QString bech32Hrp;
+    quint64 vByteFactorKey,vByteFactorData,vByteCost;
 public slots:
     void fill(QJsonValue data);
 signals:
