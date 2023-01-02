@@ -85,6 +85,7 @@ void Client::get_basic_outputs(Node_outputs* node_outs_,const QString& filter)co
         auto transid=data["items"].toArray();
         node_outs_->size_+=transid.size();
         outputids->deleteLater();
+        if(transid.size()==0)node_outs_->fill();
         for(auto v:transid)
         {
             auto output=get_api_core_v2_outputs_outputId(v.toString());
