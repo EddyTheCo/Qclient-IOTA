@@ -21,15 +21,16 @@ class Node_outputs : public QObject
     Q_OBJECT
 public:
     Node_outputs(void);
-    std::vector<std::shared_ptr<qblocks::Output>> outs_;
-    std::vector<qblocks::transaction_id> transids_;
-    std::vector<quint16> outputIndexs_;
+    static std::vector<std::shared_ptr<qblocks::Input>> create_inputs(std::vector<Node_output> outs_, const quint64 amount_need_it,
+                                                                      qblocks::c_array& Inputs_Commitments, quint64& amount);
+    std::vector<Node_output> outs_;
     size_t size_;
 
 public slots:
     void fill(QJsonValue data);
+    void fill(){emit finished();};
 signals:
-    void finished(void);
+    void finished();
 
 
 };
