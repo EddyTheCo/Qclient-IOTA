@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 include(local_conf.cmake OPTIONAL)
-project(QtIotaClient VERSION 0.1 DESCRIPTION "IOTA-QT client library" LANGUAGES CXX)
+project(QtIotaClient VERSION 0.2 DESCRIPTION "IOTA-QT client library" LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(default_build_type "Release")
@@ -25,7 +25,7 @@ include(FetchContent)
 FetchContent_Declare(
         qblock
         GIT_REPOSITORY git@github.com:EddyTheCo/Qblock-IOTA.git
-        GIT_TAG main
+        GIT_TAG version-0.2
         )
 FetchContent_MakeAvailable(qblock)
 FetchContent_Declare(
