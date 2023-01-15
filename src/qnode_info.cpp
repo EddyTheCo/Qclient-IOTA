@@ -28,6 +28,11 @@ void Node_info::fill(QJsonValue data)
     vByteFactorData=rentStructure["vByteFactorData"].toInteger();
     vByteCost=rentStructure["vByteCost"].toInteger();
 
+    const auto baseToken=(data["baseToken"].toObject());
+    unit=baseToken["unit"].toString();
+    subunit=baseToken["subunit"].toString();
+    decimals=baseToken["decimals"].toInt();
+
     emit finished();
     response_->deleteLater();
 }

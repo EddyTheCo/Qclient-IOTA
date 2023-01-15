@@ -12,9 +12,9 @@ class Node_info : public QObject
 public:
     Node_info(Response*);
     quint64 network_id_;
-    quint8  protocol_version;
+    quint8  protocol_version,decimals;
     quint32 min_pow_score;
-    QString bech32Hrp;
+    QString bech32Hrp,unit,subunit;
     quint64 vByteFactorKey,vByteFactorData,vByteCost;
 public slots:
     void fill(QJsonValue data);
