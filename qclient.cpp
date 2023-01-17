@@ -8,7 +8,6 @@ namespace qiota{
 Client::Client(const QUrl& rest_node_address):
     rest_node_address_(rest_node_address),nam(new QNetworkAccessManager())
 {
-nam->connectToHost(rest_node_address_.toEncoded(),14265);
 
 };
 Response*  Client::get_reply_rest(const QString& path,const QString& query)const

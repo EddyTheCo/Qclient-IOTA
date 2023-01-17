@@ -25,6 +25,7 @@ public:
 
     void send_block(const qblocks::Block& block_)const;
     void get_basic_outputs(Node_outputs* node_outs_,const QString& filter)const;
+    void set_node_address(const QUrl node_address_m){rest_node_address_=node_address_m;}
 
     Node_info* get_api_core_v2_info(void)const;
 
