@@ -8,7 +8,10 @@ namespace qiota{
 Client::Client(const QUrl& rest_node_address):
     rest_node_address_(rest_node_address),nam(new QNetworkAccessManager())
 {
+    connect(this,&Client::last_blockid,this,[=](qblocks::c_array id){
 
+        qDebug()<<id.toHexString();
+    });
 };
 Response*  Client::get_reply_rest(const QString& path,const QString& query)const
 {
@@ -47,24 +50,47 @@ Node_block* Client::get_api_core_v2_blocks_blockId(const QString& blockId)const
 void Client::send_block(const qblocks::Block& block_)const
 {
     auto node_block_=new Node_block(block_);
-    auto info_=get_api_core_v2_info();
-    auto tips_=get_api_core_v2_tips();
-    auto nfinder_=new qpow::nonceFinder();
-    QObject::connect(info_,&Node_info::finished,node_block_,[=](){node_block_->set_pv(info_->protocol_version);});
-    QObject::connect(info_,&Node_info::finished,nfinder_,[=](){nfinder_->set_Min_Pow_Score(info_->min_pow_score);
-        info_->deleteLater();
-    });
-    QObject::connect(tips_,&Node_tips::finished,node_block_,[=](){node_block_->set_parents(tips_->tips);
-        tips_->deleteLater();
-    });
-    QObject::connect(node_block_,&Node_block::ready,nfinder_,&qpow::nonceFinder::calculate);
-    QObject::connect(nfinder_,&qpow::nonceFinder::nonce_found,node_block_,&Node_block::set_nonce);
-    QObject::connect(nfinder_,&qpow::nonceFinder::nonce_found,nfinder_,&QObject::deleteLater);
-    QObject::connect(nfinder_,&qpow::nonceFinder::nonce_not_found,this,[=](){
+    connect(node_block_,&Node_block::finished,this,[=](){
+        auto blockid_=Client::post_api_core_v2_blocks(node_block_->block_.get_Json());
         node_block_->deleteLater();
-        nfinder_->deleteLater();
-        send_block(block_);
+        QObject::connect(blockid_,&Node_blockID::finished,this,[=](){
+            emit last_blockid(blockid_->id);
+            blockid_->deleteLater();
+        });
     });
+    auto info_=get_api_core_v2_info();
+    connect(info_,&Node_info::finished,this,[=](){
+        node_block_->set_pv(info_->protocol_version);
+        auto tips_=get_api_core_v2_tips();
+        connect(tips_,&Node_tips::finished,this,[=](){
+            node_block_->set_parents(tips_->tips);
+
+            if(info_->min_pow_score)
+            {
+                auto nfinder_=new qpow::nonceFinder();
+                nfinder_->set_Min_Pow_Score(info_->min_pow_score);
+                nfinder_->calculate(node_block_->ready());
+                connect(nfinder_,&qpow::nonceFinder::nonce_found,this,[=](const quint64 &nonce)
+                {
+                    node_block_->set_nonce(nonce);
+                    nfinder_->deleteLater();
+                });
+                connect(nfinder_,&qpow::nonceFinder::nonce_not_found,this,[=](){
+                    node_block_->deleteLater();
+                    nfinder_->deleteLater();
+                    send_block(block_);
+                });
+            }
+            else
+            {
+                node_block_->set_nonce(0);
+            }
+
+            tips_->deleteLater();
+            info_->deleteLater();
+        });
+    });
+
     QObject::connect(node_block_,&Node_block::finished,this,[=](){
 
         auto blockid_=Client::post_api_core_v2_blocks(node_block_->block_.get_Json());
