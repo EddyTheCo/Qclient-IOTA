@@ -11,20 +11,21 @@ class Node_block : public QObject
     Q_OBJECT
 public:
     Node_block(Response*);
-    Node_block(const qblocks::Block &block_m):block_(block_m),pv_set(false),parents_set(false){};
+    Node_block(const qblocks::Block &block_m):block_(block_m){};
     qblocks::Block block_;
+    qblocks::c_array ready(void)const;
+
 public slots:
     void fill(QJsonValue data);
     void set_pv(const quint8& pv);
     void set_parents(const std::vector<qblocks::block_id>& parents_m);
     void set_nonce(const quint64& nonce_m);
+
+
 signals:
     void finished(void);
-    void ready(qblocks::c_array serial_block);
 
 private:
-    void emitready(void);
-    bool pv_set,parents_set;
     Response* response_;
 };
 
