@@ -1,5 +1,4 @@
 #include"client/qclient.hpp"
-#include"pow/qpow.hpp"
 #include<iostream>
 #include <QCoreApplication>
 #undef NDEBUG
@@ -7,25 +6,22 @@
 
 
 using namespace qiota::qblocks;
-using namespace qiota::qpow;
 using namespace qiota;
 
 int main(int argc, char** argv)
 {
 
     QCoreApplication a(argc, argv);
-    auto iota=new Client(QUrl("https://api.testnet.shimmer.network"));
+    auto iota=new Client(QUrl(argv[1]));
 
-    auto data_=dataF("hello");
-    auto tag_=tagF("IOTA");
+    auto data_=dataF("hello form testing");
+    auto tag_=tagF("testing from hello");
     auto payload_=std::shared_ptr<Payload>(new Tagged_Data_Payload(tag_,data_));
     auto block_=Block(payload_);
 
     iota->send_block(block_);
 
-    QObject::connect(iota,&Client::last_blockid,&a,[=](c_array id){
-        qDebug()<<"id:"<<id.toHexString();
-    });
+    auto info=iota->get_api_core_v2_info();
 
 
     return a.exec();
