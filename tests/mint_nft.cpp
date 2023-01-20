@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     auto MK=Master_key(seed);
     auto keys=MK.slip10_key_from_path(path);
 
-    auto addr_bundle=new AddressBundle(qed25519::create_keypair(keys.secret_key()));
+
     QJsonObject metadatajson;
     metadatajson.insert("standard","IRC27");
     metadatajson.insert("version","v1.0");
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
     auto info=iota_client->get_api_core_v2_info();
     QObject::connect(info,&Node_info::finished,a,[=]( ){
-
+        auto addr_bundle=new AddressBundle(qed25519::create_keypair(keys.secret_key()),info->bech32Hrp);
         const auto address=addr_bundle->get_address<Address::Ed25519_typ>();
         qDebug()<<"address:"<<address;
         auto node_outputs_=new Node_outputs();
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
                     }
                     else
                     {
-                        BaOut->amount_=min_deposit;
+                        BaOut->amount_=amount-stora_deposit;
                     }
 
                 }
