@@ -1,12 +1,14 @@
 #include"client/qclient.hpp"
 #include"pow/qpow.hpp"
+#define TESTPASSED if(!test_passed.isNull())request.setRawHeader(QByteArray(test_passed.split(u' ')[0].toUtf8()),\
+QByteArray((test_passed.split(u' ')[1]+" "+test_passed.split(u' ')[2]).toUtf8()));
 #include<QJsonDocument>
 #include<QJsonObject>
 #include<iostream>
 namespace qiota{
 
-Client::Client(const QUrl& rest_node_address):
-    rest_node_address_(rest_node_address),nam(new QNetworkAccessManager())
+Client::Client(const QUrl& rest_node_address, QString test_passed_m):
+    rest_node_address_(rest_node_address),nam(new QNetworkAccessManager()),test_passed(test_passed_m)
 {
     connect(this,&Client::last_blockid,this,[=](qblocks::c_array id){
 
@@ -19,6 +21,7 @@ Response*  Client::get_reply_rest(const QString& path,const QString& query)const
     InfoUrl.setPath(path);
     InfoUrl.setQuery(query);
     auto request=QNetworkRequest(InfoUrl);
+    TESTPASSED
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return new Response(nam->get(request));
 }
@@ -27,6 +30,7 @@ Response*  Client::post_reply_rest(const QString& path, const QJsonObject& paylo
     QUrl InfoUrl=rest_node_address_;
     InfoUrl.setPath(path);
     auto request=QNetworkRequest(InfoUrl);
+    TESTPASSED
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return new Response(nam->post(request,QJsonDocument(payload).toJson()));
 }
@@ -65,7 +69,7 @@ void Client::send_block(const qblocks::Block& block_)const
         connect(tips_,&Node_tips::finished,this,[=](){
             node_block_->set_parents(tips_->tips);
 
-            if(info_->min_pow_score)
+            if(info_->min_pow_score&&!(info_->pow_feature))
             {
                 auto nfinder_=new qpow::nonceFinder();
                 nfinder_->set_Min_Pow_Score(info_->min_pow_score);

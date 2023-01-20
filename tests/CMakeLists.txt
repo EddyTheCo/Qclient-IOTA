@@ -14,9 +14,9 @@ qt_add_executable(full_block_with_tagged_data_payload
         full_block_with_tagged_data_payload.cpp
         )
 
-if(EMSCRIPTEN)
+if(EMSCRIPTEN AND USE_THREADS)
 	target_compile_options(full_block_with_tagged_data_payload PRIVATE -pthread )
-	target_link_options(full_block_with_tagged_data_payload PRIVATE -pthread -sPTHREAD_POOL_SIZE=32 )
+        target_link_options(full_block_with_tagged_data_payload PRIVATE -pthread -sPTHREAD_POOL_SIZE=8)
 endif()
 target_link_libraries(full_block_with_tagged_data_payload PRIVATE qclient)
 

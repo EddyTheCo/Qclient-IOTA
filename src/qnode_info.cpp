@@ -1,12 +1,13 @@
 #include"client/qnode_info.hpp"
 #include<QDataStream>
 #include<QJsonObject>
+#include<QJsonArray>
 #include<QDebug>
 #include <QCryptographicHash>
 namespace qiota{
 
 
-Node_info::Node_info(Response* resp):response_(resp)
+Node_info::Node_info(Response* resp):response_(resp),pow_feature(false)
 {
     QObject::connect(resp, &Response::returned,this, &Node_info::fill);
 }
@@ -32,6 +33,9 @@ void Node_info::fill(QJsonValue data)
     unit=baseToken["unit"].toString();
     subunit=baseToken["subunit"].toString();
     decimals=baseToken["decimals"].toInt();
+
+    const auto features=data["features"].toArray();
+    for(const auto v:features){if(v=="pow"){pow_feature=true;}}
 
     emit finished();
     response_->deleteLater();
