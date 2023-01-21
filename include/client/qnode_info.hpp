@@ -16,7 +16,7 @@ public:
     quint32 min_pow_score;
     QString bech32Hrp,unit,subunit;
     quint64 vByteFactorKey,vByteFactorData,vByteCost;
-    bool pow_feature;
+    bool isHealthy,pow_feature;
 public slots:
     void fill(QJsonValue data);
 signals:

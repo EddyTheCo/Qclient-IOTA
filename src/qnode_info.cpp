@@ -7,7 +7,7 @@
 namespace qiota{
 
 
-Node_info::Node_info(Response* resp):response_(resp),pow_feature(false)
+Node_info::Node_info(Response* resp):response_(resp),pow_feature(false),isHealthy(false)
 {
     QObject::connect(resp, &Response::returned,this, &Node_info::fill);
 }
@@ -36,6 +36,9 @@ void Node_info::fill(QJsonValue data)
 
     const auto features=data["features"].toArray();
     for(const auto v:features){if(v=="pow"){pow_feature=true;}}
+
+
+    isHealthy=data["status"].toObject()["isHealthy"].toBool();
 
     emit finished();
     response_->deleteLater();
