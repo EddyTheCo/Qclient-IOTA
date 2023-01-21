@@ -20,16 +20,18 @@ class Client: public QObject
 
       Q_OBJECT
 public:
-    Client(const QUrl& rest_node_address=QUrl(""),QString test_pass_m=QString());
-
+    Client();
 
     void send_block(const qblocks::Block& block_)const;
     void get_basic_outputs(Node_outputs* node_outs_,const QString& filter)const;
-    void set_node_address(const QUrl node_address_m){rest_node_address_=node_address_m;}
+    void set_node_address(const QUrl node_address_m);
+    QUrl get_node_address(void)const{return rest_node_address_;}
+    void set_jwt(const QString jwt_m){JWT=jwt_m;}
     Node_info* get_api_core_v2_info(void)const;
 
 signals:
 void last_blockid(qblocks::c_array id)const;
+void ready();
 
 private:
     Response*  get_reply_rest(const QString& path, const QString &query="")const;
@@ -48,7 +50,7 @@ private:
 
     QUrl rest_node_address_;
     QNetworkAccessManager* nam;
-    QString test_passed;
+    QString JWT;
 };
 
 };

@@ -1,27 +1,41 @@
 #include"client/qclient.hpp"
 #include"pow/qpow.hpp"
-#define TESTPASSED if(!test_passed.isNull())request.setRawHeader(QByteArray(test_passed.split(u' ')[0].toUtf8()),\
-QByteArray((test_passed.split(u' ')[1]+" "+test_passed.split(u' ')[2]).toUtf8()));
 #include<QJsonDocument>
 #include<QJsonObject>
 #include<iostream>
 namespace qiota{
 
-Client::Client(const QUrl& rest_node_address, QString test_passed_m):
-    rest_node_address_(rest_node_address),nam(new QNetworkAccessManager()),test_passed(test_passed_m)
+Client::Client():
+    nam(new QNetworkAccessManager())
 {
     connect(this,&Client::last_blockid,this,[=](qblocks::c_array id){
-
         qDebug()<<id.toHexString();
     });
 };
+void Client::set_node_address(const QUrl node_address_m)
+{
+    if(node_address_m!=rest_node_address_&&node_address_m.isValid())
+    {
+        auto info=get_api_core_v2_info();
+        QObject::connect(info,&Node_info::finished,this,[=]( ){
+            if(info->isHealthy)
+            {
+                rest_node_address_=node_address_m;
+                emit ready();
+            }
+            info->deleteLater();
+        });
+    }
+}
+
 Response*  Client::get_reply_rest(const QString& path,const QString& query)const
 {
     QUrl InfoUrl=rest_node_address_;
     InfoUrl.setPath(path);
     InfoUrl.setQuery(query);
     auto request=QNetworkRequest(InfoUrl);
-    TESTPASSED
+    if(!JWT.isNull())request.setRawHeader(QByteArray("Autorization"),
+                                          QByteArray(("Bearer " + JWT).toUtf8()));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return new Response(nam->get(request));
 }
@@ -30,7 +44,8 @@ Response*  Client::post_reply_rest(const QString& path, const QJsonObject& paylo
     QUrl InfoUrl=rest_node_address_;
     InfoUrl.setPath(path);
     auto request=QNetworkRequest(InfoUrl);
-    TESTPASSED
+    if(!JWT.isNull())request.setRawHeader(QByteArray("Autorization"),
+                                          QByteArray(("Bearer " + JWT).toUtf8()));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return new Response(nam->post(request,QJsonDocument(payload).toJson()));
 }
