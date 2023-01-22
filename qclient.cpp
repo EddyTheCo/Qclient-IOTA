@@ -14,12 +14,16 @@ Client::Client():
 };
 void Client::set_node_address(const QUrl node_address_m)
 {
+
     if(node_address_m!=rest_node_address_&&node_address_m.isValid())
     {
+
+        rest_node_address_=node_address_m;
         auto info=get_api_core_v2_info();
         QObject::connect(info,&Node_info::finished,this,[=]( ){
             if(info->isHealthy)
             {
+
                 rest_node_address_=node_address_m;
                 emit ready();
             }
