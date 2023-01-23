@@ -38,7 +38,7 @@ Response*  Client::get_reply_rest(const QString& path,const QString& query)const
     InfoUrl.setPath(path);
     InfoUrl.setQuery(query);
     auto request=QNetworkRequest(InfoUrl);
-    if(!JWT.isNull())request.setRawHeader(QByteArray("Autorization"),
+    if(!JWT.isNull())request.setRawHeader(QByteArray("Authorization"),
                                           QByteArray(("Bearer " + JWT).toUtf8()));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return new Response(nam->get(request));
@@ -48,8 +48,9 @@ Response*  Client::post_reply_rest(const QString& path, const QJsonObject& paylo
     QUrl InfoUrl=rest_node_address_;
     InfoUrl.setPath(path);
     auto request=QNetworkRequest(InfoUrl);
-    if(!JWT.isNull())request.setRawHeader(QByteArray("Autorization"),
-                                          QByteArray(("Bearer " + JWT).toUtf8()));
+    if(!JWT.isNull())request.setRawHeader(QByteArray("Authorization"),
+                                          QByteArray("Bearer ").append(JWT.toUtf8()));
+    qDebug()<<"header:"<<request.rawHeader(QByteArray(""));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return new Response(nam->post(request,QJsonDocument(payload).toJson()));
 }
