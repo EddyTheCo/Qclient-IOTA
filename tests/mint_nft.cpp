@@ -20,11 +20,13 @@ int main(int argc, char** argv)
 
     auto a=new QCoreApplication(argc, argv);
 
-    auto iota_client=new Client(QUrl(argv[1]),(argc>1)?
-                QByteArray(QByteArray(argv[3]).append(" ").append(argv[4]).append(" ").append(argv[5])):QByteArray());
+    auto iota_client=new Client();
+    iota_client->set_node_address(QUrl(argv[1]));
     //https://api.testnet.shimmer.network
     //ef4593558d0c3ed9e3f7a2de766d33093cd72372c800fa47ab5765c43ca006b5
     auto seed=QByteArray::fromHex(argv[2]);
+
+    if(argc>2)iota_client->set_jwt(argv[3]);
 
     QVector<quint32> path={44,4219,0,0,0};
     auto MK=Master_key(seed);
