@@ -29,7 +29,7 @@ void Response::error_found(QNetworkReply::NetworkError code)
     auto errorreply=reply->errorString();
     qDebug()<<"Error:"<<errorreply;
     qDebug()<<"code:"<<code;
-
+    qDebug()<<"errorfound"<<reply->readAll();
 }
 
 
