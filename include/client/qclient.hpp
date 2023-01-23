@@ -24,6 +24,7 @@ public:
 
     void send_block(const qblocks::Block& block_)const;
     void get_basic_outputs(Node_outputs* node_outs_,const QString& filter)const;
+    void get_nft_outputs(Node_outputs* node_outs_,const QString& filter)const;
     void set_node_address(const QUrl node_address_m);
     QUrl get_node_address(void)const{return rest_node_address_;}
     QString get_jwt(void)const{return JWT;}
@@ -47,7 +48,8 @@ private:
     Response* get_api_core_v2_outputs_outputId(const QString& outputId)const;
     Response* get_api_core_v2_outputs_outputId_metadata(const QString& outputId)const;
     Response* get_api_indexer_v1_outputs_basic(const QString& filter)const;
-
+    Response* get_api_indexer_v1_outputs_nft(const QString& filter)const;
+    Response* get_api_indexer_v1_outputs_nft_nftId(const QString& nftId)const;
 
     QUrl rest_node_address_;
     QNetworkAccessManager* nam;
