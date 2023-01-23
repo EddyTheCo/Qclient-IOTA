@@ -87,12 +87,11 @@ void Client::send_block(const qblocks::Block& block_)const
         auto tips_=get_api_core_v2_tips();
         connect(tips_,&Node_tips::finished,this,[=](){
             node_block_->set_parents(tips_->tips);
-
             if(info_->min_pow_score&&!(info_->pow_feature))
             {
                 auto nfinder_=new qpow::nonceFinder();
-                nfinder_->set_Min_Pow_Score(info_->min_pow_score);
-                nfinder_->calculate(node_block_->ready());
+
+
                 connect(nfinder_,&qpow::nonceFinder::nonce_found,this,[=](const quint64 &nonce)
                 {
                     node_block_->set_nonce(nonce);
@@ -103,6 +102,8 @@ void Client::send_block(const qblocks::Block& block_)const
                     nfinder_->deleteLater();
                     send_block(block_);
                 });
+                nfinder_->set_Min_Pow_Score(info_->min_pow_score);
+                nfinder_->calculate(node_block_->ready());
             }
             else
             {
