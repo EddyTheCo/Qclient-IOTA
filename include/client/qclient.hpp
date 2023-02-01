@@ -18,10 +18,13 @@ namespace qiota{
 class Client: public QObject
 {
 
-      Q_OBJECT
+    Q_OBJECT
 public:
     Client();
-
+    enum ClientState {
+        Disconnected = 0,
+        Connected
+    };
     void send_block(const qblocks::Block& block_)const;
     void get_basic_outputs(Node_outputs* node_outs_,const QString& filter)const;
     void get_nft_outputs(Node_outputs* node_outs_,const QString& filter)const;
@@ -30,12 +33,14 @@ public:
     QString get_jwt(void)const{return JWT;}
     void set_jwt(const QString jwt_m){JWT=jwt_m;}
     Node_info* get_api_core_v2_info(void)const;
+    ClientState state(void)const{return state_;}
 
 signals:
-void last_blockid(qblocks::c_array id)const;
-void ready(void);
+    void last_blockid(qblocks::c_array id)const;
+    void stateChanged(void);
 
 private:
+    void set_State(ClientState state_m){if(state_m!=state_){state_=state_m;emit stateChanged();}}
     Response*  get_reply_rest(const QString& path, const QString &query="")const;
     Response*  post_reply_rest(const QString& path, const QJsonObject& payload )const;
 
@@ -54,6 +59,7 @@ private:
     QUrl rest_node_address_;
     QNetworkAccessManager* nam;
     QString JWT;
+    ClientState state_;
 };
 
 };

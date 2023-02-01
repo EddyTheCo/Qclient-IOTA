@@ -15,14 +15,15 @@ Client::Client():
 void Client::set_node_address(const QUrl node_address_m)
 {
 
-    if(node_address_m!=rest_node_address_&&node_address_m.isValid())
+    if((node_address_m!=rest_node_address_||state_!=Connected)&&node_address_m.isValid())
     {
         rest_node_address_=node_address_m;
         auto info=get_api_core_v2_info();
         QObject::connect(info,&Node_info::finished,this,[=]( ){
             if(info->isHealthy)
             {
-                emit ready();
+                state_=Connected;
+                emit stateChanged();
             }
             info->deleteLater();
         });
@@ -87,7 +88,6 @@ void Client::send_block(const qblocks::Block& block_)const
             if(info_->min_pow_score&&!(info_->pow_feature))
             {
                 auto nfinder_=new qpow::nonceFinder();
-
 
                 connect(nfinder_,&qpow::nonceFinder::nonce_found,this,[=](const quint64 &nonce)
                 {
