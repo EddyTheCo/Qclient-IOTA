@@ -112,16 +112,6 @@ void Client::send_block(const qblocks::Block& block_)const
         });
     });
 
-    QObject::connect(node_block_,&Node_block::finished,this,[=](){
-
-        auto blockid_=Client::post_api_core_v2_blocks(node_block_->block_.get_Json());
-        node_block_->deleteLater();
-        QObject::connect(blockid_,&Node_blockID::finished,this,[=](){
-            emit last_blockid(blockid_->id);
-            blockid_->deleteLater();
-        });
-    });
-
 
 }
 void Client::get_basic_outputs(Node_outputs* node_outs_,const QString& filter)const
