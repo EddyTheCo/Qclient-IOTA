@@ -16,11 +16,9 @@ Node_output::Node_output(QJsonValue data):metadata_(data["metadata"]),out_(qbloc
 void Node_outputs::fill(QJsonValue data)
 {
     outs_.push_back(Node_output(data));
-    qDebug()<<"fill";
 
     if(outs_.size()==size_)
     {
-        qDebug()<<"fill finished";
         emit finished();
     }
 
