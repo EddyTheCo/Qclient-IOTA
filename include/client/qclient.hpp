@@ -20,7 +20,7 @@ class Client: public QObject
 
     Q_OBJECT
 public:
-    Client();
+    Client(QObject *parent = nullptr);
     enum ClientState {
         Disconnected = 0,
         Connected
@@ -37,10 +37,10 @@ public:
 
 signals:
     void last_blockid(qblocks::c_array id)const;
-    void stateChanged(void);
+    void stateChanged(Client::ClientState state);
 
 private:
-    void set_State(ClientState state_m){if(state_m!=state_){state_=state_m;emit stateChanged();}}
+    void set_State(ClientState state_m){if(state_m!=state_){state_=state_m;emit stateChanged(state_);}}
     Response*  get_reply_rest(const QString& path, const QString &query="")const;
     Response*  post_reply_rest(const QString& path, const QJsonObject& payload )const;
 
