@@ -5,9 +5,10 @@
 #include<iostream>
 namespace qiota{
 
-Client::Client():
-    nam(new QNetworkAccessManager())
+Client::Client(QObject *parent):
+    nam(new QNetworkAccessManager(this))
 {
+    this->setParent(parent);
     connect(this,&Client::last_blockid,this,[=](qblocks::c_array id){
         qDebug()<<id.toHexString();
     });
@@ -23,7 +24,7 @@ void Client::set_node_address(const QUrl node_address_m)
             if(info->isHealthy)
             {
                 state_=Connected;
-                emit stateChanged();
+                emit stateChanged(state_);
             }
             info->deleteLater();
         });
