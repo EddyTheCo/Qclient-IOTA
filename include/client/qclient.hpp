@@ -25,22 +25,24 @@ public:
         Disconnected = 0,
         Connected
     };
-    void send_block(const qblocks::Block& block_)const;
+    void send_block(const qblocks::Block& block_);
     void get_basic_outputs(Node_outputs* node_outs_,const QString& filter)const;
     void get_nft_outputs(Node_outputs* node_outs_,const QString& filter)const;
     void set_node_address(const QUrl node_address_m);
     QUrl get_node_address(void)const{return rest_node_address_;}
     QString get_jwt(void)const{return JWT;}
     void set_jwt(const QString jwt_m){JWT=jwt_m;}
-    Node_info* get_api_core_v2_info(void)const;
+    Node_info* get_api_core_v2_info(void);
     ClientState state(void)const{return state_;}
+    QJsonObject info()const{return info_;}
+
 
 signals:
     void last_blockid(qblocks::c_array id)const;
-    void stateChanged(Client::ClientState state);
+    void stateChanged();
 
 private:
-    void set_State(ClientState state_m){if(state_m!=state_){state_=state_m;emit stateChanged(state_);}}
+    void set_State(ClientState state_m){if(state_m!=state_){state_=state_m;emit stateChanged();}}
     Response*  get_reply_rest(const QString& path, const QString &query="")const;
     Response*  post_reply_rest(const QString& path, const QJsonObject& payload )const;
 
@@ -60,6 +62,7 @@ private:
     QNetworkAccessManager* nam;
     QString JWT;
     ClientState state_;
+    QJsonObject info_;
 };
 
 };

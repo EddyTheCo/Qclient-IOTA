@@ -18,15 +18,16 @@ void Client::set_node_address(const QUrl node_address_m)
 
     if((node_address_m!=rest_node_address_||state_!=Connected)&&node_address_m.isValid())
     {
+        set_State(Disconnected);
         rest_node_address_=node_address_m;
         auto info=get_api_core_v2_info();
         QObject::connect(info,&Node_info::finished,this,[=]( ){
+
             if(info->isHealthy)
             {
-                state_=Connected;
-                emit stateChanged(state_);
+                set_State(Connected);
             }
-            info->deleteLater();
+
         });
     }
 }
@@ -52,9 +53,15 @@ Response*  Client::post_reply_rest(const QString& path, const QJsonObject& paylo
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return new Response(nam->post(request,QJsonDocument(payload).toJson()));
 }
-Node_info* Client::get_api_core_v2_info(void)const
+Node_info* Client::get_api_core_v2_info(void)
 {
-    return new Node_info(get_reply_rest("/api/core/v2/info"));
+    auto resp=get_reply_rest("/api/core/v2/info");
+
+    connect(resp, &Response::returned,this,[=]( QJsonValue data ){
+        info_=data.toObject();
+    });
+
+    return new Node_info(resp);
 }
 Node_tips* Client::get_api_core_v2_tips()const
 {
@@ -69,7 +76,7 @@ Node_block* Client::get_api_core_v2_blocks_blockId(const QString& blockId)const
     return new Node_block(get_reply_rest("/api/core/v2/blocks/"+blockId));
 }
 
-void Client::send_block(const qblocks::Block& block_)const
+void Client::send_block(const qblocks::Block& block_)
 {
     auto node_block_=new Node_block(block_);
     connect(node_block_,&Node_block::finished,this,[=](){
