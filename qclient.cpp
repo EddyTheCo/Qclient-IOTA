@@ -38,6 +38,7 @@ Response*  Client::get_reply_rest(const QString& path,const QString& query)const
     InfoUrl.setPath(path);
     InfoUrl.setQuery(query);
     auto request=QNetworkRequest(InfoUrl);
+    request.setAttribute(QNetworkRequest::UseCredentialsAttribute,false);
     if(!JWT.isNull())request.setRawHeader(QByteArray("Authorization"),
                                           QByteArray(("Bearer " + JWT).toUtf8()));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -48,6 +49,7 @@ Response*  Client::post_reply_rest(const QString& path, const QJsonObject& paylo
     QUrl InfoUrl=rest_node_address_;
     InfoUrl.setPath(path);
     auto request=QNetworkRequest(InfoUrl);
+    request.setAttribute(QNetworkRequest::UseCredentialsAttribute,false);
     if(!JWT.isNull())request.setRawHeader(QByteArray("Authorization"),
                                           QByteArray("Bearer ").append(JWT.toUtf8()));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
