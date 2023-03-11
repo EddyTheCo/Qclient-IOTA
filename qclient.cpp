@@ -5,10 +5,9 @@
 #include<iostream>
 namespace qiota{
 
-Client::Client(QObject *parent):
+Client::Client(QObject *parent):QObject(parent),
     nam(new QNetworkAccessManager(this))
 {
-    this->setParent(parent);
     connect(this,&Client::last_blockid,this,[=](qblocks::c_array id){
         qDebug()<<id.toHexString();
     });
