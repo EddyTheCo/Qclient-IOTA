@@ -20,15 +20,12 @@ int main(int argc, char** argv)
     if(argc>1)iota_client->set_jwt(argv[2]);
 
 
-    auto data_=dataF("hello form testing");
-    auto tag_=tagF("testing from hello");
+    auto data_=dataF("testing from Iota-Qt");
+    auto tag_=tagF("testing from Iota-Qt");
     auto payload_=std::shared_ptr<Payload>(new Tagged_Data_Payload(tag_,data_));
     auto block_=Block(payload_);
 
     iota_client->send_block(block_);
-
-    auto info=iota_client->get_api_core_v2_info();
-
 
     return a.exec();
 }
