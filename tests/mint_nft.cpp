@@ -42,25 +42,25 @@ int main(int argc, char** argv)
 
     auto info=iota_client->get_api_core_v2_info();
     QObject::connect(info,&Node_info::finished,a,[=]( ){
-        auto addr_bundle=new AddressBundle(qed25519::create_keypair(keys.secret_key()),info->bech32Hrp);
-        const auto address=addr_bundle->get_address<Address::Ed25519_typ>();
+        auto addr_bundle=new AddressBundle(qed25519::create_keypair(keys.secret_key()));
+        const auto address=addr_bundle->get_address_bech32<Address::Ed25519_typ>(info->bech32Hrp);
         qDebug()<<"address:"<<address;
         auto node_outputs_=new Node_outputs();
         iota_client->get_basic_outputs(node_outputs_,"address="+address);
 
         QObject::connect(node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
-            qDebug()<<"Node_outputs::finished";
+
             auto eddAddr=std::shared_ptr<Address>(new Ed25519_Address(addr_bundle->get_hash()));
             auto issuerFea=std::shared_ptr<qblocks::Feature>(new Issuer_Feature(eddAddr));
             auto metadata=QJsonDocument(metadatajson).toJson(QJsonDocument::Indented);
             auto metFea=std::shared_ptr<qblocks::Feature>(new Metadata_Feature(fl_array<quint16>(metadata)));
-            qDebug()<<"Node_outputs::finished";
+
 
             auto addUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Address_Unlock_Condition(eddAddr));
 
             auto NftOut= std::shared_ptr<qblocks::Output>(new NFT_Output(0,{addUnlcon},{},{},{issuerFea,metFea}));
 
-            qDebug()<<"Node_outputs::finished";
+
             const auto stora_deposit=NftOut->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
             qDebug()<<"stora_deposit:"<<stora_deposit;
             c_array Inputs_Commitments;

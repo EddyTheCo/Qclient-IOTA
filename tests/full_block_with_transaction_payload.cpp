@@ -41,8 +41,8 @@ int main(int argc, char** argv)
     auto info=iota_client->get_api_core_v2_info();
     QObject::connect(info,&Node_info::finished,a,[=]( ){
 
-        auto addr_bundle=new AddressBundle(qed25519::create_keypair(keys.secret_key()),info->bech32Hrp);
-        const auto address=addr_bundle->get_address<Address::Ed25519_typ>();
+        auto addr_bundle=new AddressBundle(qed25519::create_keypair(keys.secret_key()));
+        const auto address=addr_bundle->get_address_bech32<Address::Ed25519_typ>(info->bech32Hrp);
         qDebug()<<"address:"<<address;
         auto node_outputs_=new Node_outputs();
         iota_client->get_basic_outputs(node_outputs_,"address="+address);
