@@ -24,7 +24,7 @@ include(FetchContent)
 FetchContent_Declare(
         qaddr_bundle
         GIT_REPOSITORY git@github.com:EddyTheCo/QAddrBundle.git
-        GIT_TAG main
+        GIT_TAG develop
         )
 FetchContent_MakeAvailable(qaddr_bundle)
 FetchContent_Declare(
