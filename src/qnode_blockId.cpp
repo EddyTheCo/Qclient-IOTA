@@ -9,7 +9,7 @@ Node_blockID::Node_blockID(Response* resp):response_(resp)
 }
 void Node_blockID::fill(QJsonValue data)
 {
-     id=qblocks::block_id(data["blockId"]);
+     id=qblocks::Block_ID(data["blockId"]);
      emit finished();
      response_->deleteLater();
 }

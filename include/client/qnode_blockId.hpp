@@ -12,7 +12,7 @@ class Node_blockID : public QObject
 public:
     Node_blockID(){};
     Node_blockID(Response*);
-    qblocks::block_id id;
+    qblocks::Block_ID id;
 public slots:
     void fill(QJsonValue data);
 signals:

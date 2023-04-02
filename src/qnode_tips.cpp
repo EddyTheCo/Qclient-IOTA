@@ -10,7 +10,7 @@ Node_tips::Node_tips(Response* resp):response_(resp)
 void Node_tips::fill(QJsonValue data)
 {
     auto tips_arr=(data["tips"].toArray());
-    for(auto v:tips_arr)tips.push_back(qblocks::block_id(v));
+    for(auto v:tips_arr)tips.push_back(qblocks::Block_ID(v));
     emit finished();
     response_->deleteLater();
 

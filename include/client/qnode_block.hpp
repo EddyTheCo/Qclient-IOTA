@@ -18,7 +18,7 @@ public:
 public slots:
     void fill(QJsonValue data);
     void set_pv(const quint8& pv);
-    void set_parents(const std::vector<qblocks::block_id>& parents_m);
+    void set_parents(const std::vector<qblocks::Block_ID> &parents_m);
     void set_nonce(const quint64& nonce_m);
 
 

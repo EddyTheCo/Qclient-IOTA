@@ -11,7 +11,7 @@ class Node_tips : public QObject
     Q_OBJECT
 public:
     Node_tips(Response*);
-    std::vector<qblocks::block_id> tips;
+    std::vector<qblocks::Block_ID> tips;
 public slots:
     void fill(QJsonValue data);
 signals:

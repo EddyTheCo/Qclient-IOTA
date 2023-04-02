@@ -24,7 +24,7 @@ qblocks::c_array Node_block::ready(void)const
 void Node_block::set_pv(const quint8& pv){
     block_.set_pv(pv);
 }
-void Node_block::set_parents(const std::vector<qblocks::block_id>& parents_m)
+void Node_block::set_parents(const std::vector<qblocks::Block_ID>& parents_m)
 {
     block_.set_parents(parents_m);
     qDebug().noquote()<<"block_.set_parents:\n"<<QString(QJsonDocument(block_.get_Json()).toJson(QJsonDocument::Indented));
