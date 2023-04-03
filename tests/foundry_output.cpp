@@ -32,78 +32,94 @@ int main(int argc, char** argv)
     auto MK=Master_key(seed);
     auto keys=MK.slip10_key_from_path(path);
 
+    QJsonObject metadatajson;
+    metadatajson.insert("standard","IRC30");
+    metadatajson.insert("name","FooCoin");
+    metadatajson.insert("symbol","FOO");
 
 
     auto info=iota_client->get_api_core_v2_info();
     QObject::connect(info,&Node_info::finished,a,[=]( ){
         auto addr_bundle=new AddressBundle(qed25519::create_keypair(keys.secret_key()));
-        const auto address=addr_bundle->get_address_bech32<Address::Ed25519_typ>(info->bech32Hrp);
+        const auto address=addr_bundle->get_address_bech32(info->bech32Hrp);
         qDebug()<<"address:"<<address;
         auto node_outputs_=new Node_outputs();
-        iota_client->get_alias_outputs(node_outputs_,"stateController="+address);
+
 
         QObject::connect(node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
 
-            auto eddAddr=std::shared_ptr<Address>(new Ed25519_Address(addr_bundle->get_hash()));
-
-            auto addUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Address_Unlock_Condition(eddAddr));
-            auto stateUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new State_Controller_Address_Unlock_Condition(eddAddr));
-            auto goveUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Governor_Address_Unlock_Condition(eddAddr));
-
-            auto aliasOut= std::shared_ptr<qblocks::Output>(new Alias_Output(0,{stateUnlcon,goveUnlcon},0,0));
-
-            const auto stora_deposit=aliasOut->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
-            qDebug()<<"stora_deposit:"<<stora_deposit;
-            c_array Inputs_Commitments;
-            quint64 amount=0;
-            std::vector<std::shared_ptr<qblocks::Output>> ret_outputs;
-            std::vector<std::shared_ptr<qblocks::Input>> inputs;
-
-            addr_bundle->consume_outputs(node_outputs_->outs_,stora_deposit,Inputs_Commitments,amount,ret_outputs,inputs);
-            if(amount>=stora_deposit)
-            {
-                qDebug()<<"amount:"<<amount;
-                auto BaOut=std::shared_ptr<qblocks::Output>(new Basic_Output(0,{addUnlcon},{},{}));
-                if(amount>stora_deposit)
+            QObject::connect(node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
+                auto eddAddr=addr_bundle->get_address();
+                addr_bundle->consume_outputs(node_outputs_->outs_,0);
+                if(addr_bundle->amount)
                 {
-
-                    const auto min_deposit=BaOut->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
-                    qDebug()<<"min_deposit:"<<min_deposit;
-                    if(min_deposit>amount-stora_deposit)
+                    if(addr_bundle->alias_outputs.size())
                     {
-                        quint64 baamount=0;
-                        addr_bundle->consume_outputs(
-                        node_outputs_->outs_,min_deposit-(amount-stora_deposit),Inputs_Commitments,baamount,ret_outputs,inputs );
-                        if(baamount>=min_deposit-(amount-stora_deposit))BaOut->amount_=baamount+amount-stora_deposit;
-                        qDebug()<<"baamount:"<<baamount;
-                    }
-                    else
-                    {
-                        BaOut->amount_=amount-stora_deposit;
-                    }
+                        const auto aliasid=addr_bundle->alias_outputs.front()->get_id();
 
+                        const auto addUnlock=std::shared_ptr<qblocks::Unlock_Condition>(new Address_Unlock_Condition(eddAddr));
+                        addr_bundle->alias_outputs.front()->unlock_conditions_.push_back(addUnlock);
+                        const auto ailasaddress=std::shared_ptr<qblocks::Address>(new Alias_Address(aliasid));
+                        auto aliasUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Immutable_Alias_Address_Unlock_Condition(ailasaddress));
+                        auto aliasoutput=std::dynamic_pointer_cast<qblocks::Alias_Output>(addr_bundle->alias_outputs.front());
+                        aliasoutput->state_index_++;
+                        const auto serial_number=aliasoutput->foundry_counter_;
+                        auto minted_tokens=quint256();
+                        auto melted_tokens=quint256();
+                        auto maximum_supply=quint256();
+                        minted_tokens+=10000;
+                        maximum_supply+=10000;
+                        const auto token_scheme=std::shared_ptr<qblocks::Token_Scheme>
+                                (new Simple_Token_Scheme(minted_tokens,melted_tokens,maximum_supply));
+                        auto metadata=QJsonDocument(metadatajson).toJson(QJsonDocument::Indented);
+                        auto immetFea=std::shared_ptr<qblocks::Feature>(new Metadata_Feature(fl_array<quint16>(metadata)));
+                        auto metFea=std::shared_ptr<qblocks::Feature>(new Metadata_Feature(fl_array<quint16>("Iota-Qt")));
+
+                        auto foundOut= std::shared_ptr<qblocks::Output>
+                                (new Foundry_Output(0,{aliasUnlcon},token_scheme,serial_number,{metFea},{},{immetFea}));
+                        foundOut->amount_=foundOut->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
+                        addr_bundle->alias_outputs.front()->amount_=addr_bundle->alias_outputs.front()->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
+                        if(addr_bundle->amount>=foundOut->amount_+addr_bundle->alias_outputs.front()->amount_)
+                        {
+                            const auto bamount=addr_bundle->amount-foundOut->amount_-addr_bundle->alias_outputs.front()->amount_;
+                            auto BaOut=std::shared_ptr<qblocks::Output>(new Basic_Output(bamount,{addUnlock},{},{}));
+                            const auto minstorage=BaOut->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
+                            std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{addr_bundle->alias_outputs.front(),foundOut};
+                            if(bamount&&bamount<minstorage)
+                            {
+                                addr_bundle->alias_outputs.front()->amount_+=bamount;
+                                addr_bundle->alias_outputs.front()->native_tokens_=addr_bundle->get_tokens();
+                            }
+                            else
+                            {
+                                BaOut->amount_=bamount;
+                                BaOut->native_tokens_=addr_bundle->get_tokens();
+                                the_outputs_.push_back(BaOut);
+                            }
+
+                            auto Inputs_Commitment=c_array(QCryptographicHash::hash(addr_bundle->Inputs_Commitments, QCryptographicHash::Blake2b_256));
+                            auto essence=std::shared_ptr<qblocks::Essence>(
+                                        new Transaction_Essence(info->network_id_,addr_bundle->inputs,Inputs_Commitment,the_outputs_,nullptr));
+
+                            c_array serializedEssence;
+                            serializedEssence.from_object<Essence>(*essence);
+
+                            auto essence_hash=QCryptographicHash::hash(serializedEssence, QCryptographicHash::Blake2b_256);
+                            addr_bundle->create_unlocks(essence_hash);
+
+                            auto trpay=std::shared_ptr<qblocks::Payload>(new Transaction_Payload(essence,addr_bundle->unlocks));
+                            auto block_=Block(trpay);
+                            iota_client->send_block(block_);
+
+                        }
+                    }
                 }
-                aliasOut->amount_=stora_deposit;
-                std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{aliasOut};
-                if(BaOut->amount_)the_outputs_.push_back(BaOut);
-                the_outputs_.insert(the_outputs_.end(), ret_outputs.begin(), ret_outputs.end());
-                auto Inputs_Commitment=c_array(QCryptographicHash::hash(Inputs_Commitments, QCryptographicHash::Blake2b_256));
-                auto essence=std::shared_ptr<qblocks::Essence>(
-                            new Transaction_Essence(info->network_id_,inputs,Inputs_Commitment,the_outputs_,nullptr));
-                c_array serializedEssence;
-                serializedEssence.from_object<Essence>(*essence);
-
-                auto essence_hash=QCryptographicHash::hash(serializedEssence, QCryptographicHash::Blake2b_256);
-                std::vector<std::shared_ptr<qblocks::Unlock>> unlocks;
-                addr_bundle->create_unlocks<qblocks::Reference_Unlock>(essence_hash,unlocks);
-
-                auto trpay=std::shared_ptr<qblocks::Payload>(new Transaction_Payload(essence,{unlocks}));
-                auto block_=Block(trpay);
-                iota_client->send_block(block_);
-
-            }
-            info->deleteLater();
+                node_outputs_->deleteLater();
+                info->deleteLater();
+            });
+             iota_client->get_alias_outputs(node_outputs_,"stateController="+address);
         });
+        iota_client->get_basic_outputs(node_outputs_,"address="+address);
     });
 
 

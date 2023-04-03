@@ -61,8 +61,8 @@ qt_add_executable(alias_output
 add_test(NAME alias_output COMMAND alias_output )
 target_link_libraries(alias_output PRIVATE qclient qaddr_bundle qslip10 qed25519)
 
-#qt_add_executable(foundry_output
-#       foundry_output.cpp
-#        )
-#add_test(NAME foundry_output COMMAND foundry_output )
-#target_link_libraries(foundry_output PRIVATE qclient qaddr_bundle qslip10 qed25519)
+qt_add_executable(foundry_output
+       foundry_output.cpp
+        )
+add_test(NAME foundry_output COMMAND foundry_output )
+target_link_libraries(foundry_output PRIVATE qclient qaddr_bundle qslip10 qed25519)
