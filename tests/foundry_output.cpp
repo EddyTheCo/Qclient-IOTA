@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     metadatajson.insert("symbol","FOO");
 
 
-    auto info=iota_client->get_api_core_v2_info();
+    auto  info=iota_client->get_api_core_v2_info();
     QObject::connect(info,&Node_info::finished,a,[=]( ){
         auto addr_bundle=new AddressBundle(qed25519::create_keypair(keys.secret_key()));
         const auto address=addr_bundle->get_address_bech32(info->bech32Hrp);
@@ -58,17 +58,24 @@ int main(int argc, char** argv)
                         const auto aliasid=addr_bundle->alias_outputs.front()->get_id();
 
                         const auto addUnlock=std::shared_ptr<qblocks::Unlock_Condition>(new Address_Unlock_Condition(eddAddr));
-                        addr_bundle->alias_outputs.front()->unlock_conditions_.push_back(addUnlock);
+                        auto stateUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new State_Controller_Address_Unlock_Condition(eddAddr));
+                        auto goveUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Governor_Address_Unlock_Condition(eddAddr));
+
+                        addr_bundle->alias_outputs.front()->unlock_conditions_={stateUnlcon,goveUnlcon};
+
                         const auto ailasaddress=std::shared_ptr<qblocks::Address>(new Alias_Address(aliasid));
                         auto aliasUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Immutable_Alias_Address_Unlock_Condition(ailasaddress));
                         auto aliasoutput=std::dynamic_pointer_cast<qblocks::Alias_Output>(addr_bundle->alias_outputs.front());
                         aliasoutput->state_index_++;
+                        aliasoutput->foundry_counter_++;
                         const auto serial_number=aliasoutput->foundry_counter_;
+
                         auto minted_tokens=quint256();
                         auto melted_tokens=quint256();
                         auto maximum_supply=quint256();
-                        minted_tokens+=10000;
-                        maximum_supply+=10000;
+                        minted_tokens+=100000000000;
+                        maximum_supply+=100000000000;
+
                         const auto token_scheme=std::shared_ptr<qblocks::Token_Scheme>
                                 (new Simple_Token_Scheme(minted_tokens,melted_tokens,maximum_supply));
                         auto metadata=QJsonDocument(metadatajson).toJson(QJsonDocument::Indented);
@@ -77,12 +84,16 @@ int main(int argc, char** argv)
 
                         auto foundOut= std::shared_ptr<qblocks::Output>
                                 (new Foundry_Output(0,{aliasUnlcon},token_scheme,serial_number,{metFea},{},{immetFea}));
+                        auto tokenid=foundOut->get_id();
+
+                        auto nativeToken=std::shared_ptr<Native_Token>(new Native_Token(tokenid,minted_tokens));
+                        addr_bundle->native_tokens[nativeToken->token_id()]+=nativeToken->amount();
                         foundOut->amount_=foundOut->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
                         addr_bundle->alias_outputs.front()->amount_=addr_bundle->alias_outputs.front()->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
                         if(addr_bundle->amount>=foundOut->amount_+addr_bundle->alias_outputs.front()->amount_)
                         {
                             const auto bamount=addr_bundle->amount-foundOut->amount_-addr_bundle->alias_outputs.front()->amount_;
-                            auto BaOut=std::shared_ptr<qblocks::Output>(new Basic_Output(bamount,{addUnlock},{},{}));
+                            auto BaOut=std::shared_ptr<qblocks::Output>(new Basic_Output(bamount,{addUnlock},{},addr_bundle->get_tokens()));
                             const auto minstorage=BaOut->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
                             std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{addr_bundle->alias_outputs.front(),foundOut};
                             if(bamount&&bamount<minstorage)
@@ -93,7 +104,6 @@ int main(int argc, char** argv)
                             else
                             {
                                 BaOut->amount_=bamount;
-                                BaOut->native_tokens_=addr_bundle->get_tokens();
                                 the_outputs_.push_back(BaOut);
                             }
 
@@ -103,13 +113,14 @@ int main(int argc, char** argv)
 
                             c_array serializedEssence;
                             serializedEssence.from_object<Essence>(*essence);
-
+                            qDebug()<<serializedEssence.toHexString();
                             auto essence_hash=QCryptographicHash::hash(serializedEssence, QCryptographicHash::Blake2b_256);
                             addr_bundle->create_unlocks(essence_hash);
 
                             auto trpay=std::shared_ptr<qblocks::Payload>(new Transaction_Payload(essence,addr_bundle->unlocks));
                             auto block_=Block(trpay);
                             iota_client->send_block(block_);
+
 
                         }
                     }
