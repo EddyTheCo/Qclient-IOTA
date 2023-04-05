@@ -66,3 +66,8 @@ qt_add_executable(foundry_output
         )
 add_test(NAME foundry_output COMMAND foundry_output )
 target_link_libraries(foundry_output PRIVATE qclient qaddr_bundle qslip10 qed25519)
+qt_add_executable(alias_state_transition
+       alias_state_transition.cpp
+        )
+add_test(NAME alias_state_transition COMMAND alias_state_transition)
+target_link_libraries(alias_state_transition PRIVATE qclient qaddr_bundle qslip10 qed25519)
