@@ -123,67 +123,6 @@ void Client::send_block(const qblocks::Block& block_)
 
 
 }
-void Client::get_basic_outputs(Node_outputs* node_outs_,const QString& filter)const
-{
-    auto outputids=get_api_indexer_v1_outputs_basic(filter);
-    QObject::connect(outputids,&Response::returned,node_outs_,[=](QJsonValue data ){
-        auto transid=data["items"].toArray();
-        node_outs_->size_+=transid.size();
-        outputids->deleteLater();
-        if(transid.size()==0)node_outs_->fill();
-        for(auto v:transid)
-        {
-            auto output=get_api_core_v2_outputs_outputId(v.toString());
-            QObject::connect(output,&Response::returned,node_outs_,[=](QJsonValue data){
-                node_outs_->fill(data);
-                output->deleteLater();
-            });
-        }
-
-    });
-
-}
-
-void Client::get_nft_outputs(Node_outputs* node_outs_,const QString& filter)const
-{
-    auto outputids=get_api_indexer_v1_outputs_nft(filter);
-    QObject::connect(outputids,&Response::returned,node_outs_,[=](QJsonValue data ){
-        auto transid=data["items"].toArray();
-        node_outs_->size_+=transid.size();
-        outputids->deleteLater();
-        if(transid.size()==0)node_outs_->fill();
-        for(auto v:transid)
-        {
-            auto output=get_api_core_v2_outputs_outputId(v.toString());
-            QObject::connect(output,&Response::returned,node_outs_,[=](QJsonValue data){
-                node_outs_->fill(data);
-                output->deleteLater();
-            });
-        }
-
-    });
-
-}
-void Client::get_alias_outputs(Node_outputs* node_outs_,const QString& filter)const
-{
-    auto outputids=get_api_indexer_v1_outputs_alias(filter);
-    QObject::connect(outputids,&Response::returned,node_outs_,[=](QJsonValue data ){
-        auto transid=data["items"].toArray();
-        node_outs_->size_+=transid.size();
-        outputids->deleteLater();
-        if(transid.size()==0)node_outs_->fill();
-        for(auto v:transid)
-        {
-            auto output=get_api_core_v2_outputs_outputId(v.toString());
-            QObject::connect(output,&Response::returned,node_outs_,[=](QJsonValue data){
-                node_outs_->fill(data);
-                output->deleteLater();
-            });
-        }
-
-    });
-
-}
 Response* Client::get_api_core_v2_blocks_blockId_metadata(const QString& blockId)const
 {
     return get_reply_rest("/api/core/v2/blocks/"+blockId+"/metadata");
@@ -195,18 +134,6 @@ Response* Client::get_api_core_v2_outputs_outputId(const QString& outputId)const
 Response* Client::get_api_core_v2_outputs_outputId_metadata(const QString& outputId)const
 {
     return get_reply_rest("/api/core/v2/outputs/"+outputId+"/metadata");
-}
-Response* Client::get_api_indexer_v1_outputs_basic(const QString& filter)const
-{
-    return get_reply_rest("/api/indexer/v1/outputs/basic",filter);
-}
-Response* Client::get_api_indexer_v1_outputs_nft(const QString& filter)const
-{
-    return get_reply_rest("/api/indexer/v1/outputs/nft",filter);
-}
-Response* Client::get_api_indexer_v1_outputs_alias(const QString& filter)const
-{
-    return get_reply_rest("/api/indexer/v1/outputs/alias",filter);
 }
 Response* Client::get_api_indexer_v1_outputs_nft_nftId(const QString& nftId)const
 {

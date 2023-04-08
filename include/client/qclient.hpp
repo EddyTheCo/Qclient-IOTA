@@ -12,6 +12,7 @@
 #include"client/qnode_outputs.hpp"
 #include <QNetworkAccessManager>
 #include <QString>
+#include<QHash>
 
 namespace qiota{
 
@@ -26,9 +27,28 @@ public:
         Connected
     };
     void send_block(const qblocks::Block& block_);
-    void get_basic_outputs(Node_outputs* node_outs_,const QString& filter)const;
-    void get_nft_outputs(Node_outputs* node_outs_,const QString& filter)const;
-    void get_alias_outputs(Node_outputs* node_outs_,const QString& filter)const;
+    template<qblocks::Output::types outtype>
+    void get_outputs(Node_outputs* node_outs_,const QString& filter)const
+    {
+        auto outputids=get_api_indexer_v1_outputs<outtype>(filter);
+        QObject::connect(outputids,&Response::returned,node_outs_,[=](QJsonValue data ){
+            auto transid=data["items"].toArray();
+            node_outs_->size_+=transid.size();
+            outputids->deleteLater();
+            if(transid.size()==0)node_outs_->fill();
+            for(auto v:transid)
+            {
+                auto output=get_api_core_v2_outputs_outputId(v.toString());
+                QObject::connect(output,&Response::returned,node_outs_,[=](QJsonValue data){
+                    node_outs_->fill(data);
+                    output->deleteLater();
+                });
+            }
+
+        });
+
+    }
+
     void set_node_address(const QUrl node_address_m);
     QUrl get_node_address(void)const{return rest_node_address_;}
     QString get_jwt(void)const{return JWT;}
@@ -55,9 +75,12 @@ private:
 
     Response* get_api_core_v2_outputs_outputId(const QString& outputId)const;
     Response* get_api_core_v2_outputs_outputId_metadata(const QString& outputId)const;
-    Response* get_api_indexer_v1_outputs_basic(const QString& filter)const;
-    Response* get_api_indexer_v1_outputs_nft(const QString& filter)const;
-    Response* get_api_indexer_v1_outputs_alias(const QString& filter)const;
+    template<qblocks::Output::types outtype>
+    Response* get_api_indexer_v1_outputs(const QString& filter)const
+    {
+
+        return get_reply_rest("/api/indexer/v1/outputs/"+qblocks::Output::typesstr[outtype],filter);
+    }
 
     Response* get_api_indexer_v1_outputs_nft_nftId(const QString& nftId)const;
 
