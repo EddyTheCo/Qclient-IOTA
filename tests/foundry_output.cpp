@@ -44,7 +44,6 @@ int main(int argc, char** argv)
         qDebug()<<"address:"<<address;
         auto node_outputs_=new Node_outputs();
 
-
         QObject::connect(node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
 
             QObject::connect(node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
@@ -76,15 +75,16 @@ int main(int argc, char** argv)
                         auto maximum_supply=quint256();
                         minted_tokens+=100000000000;
                         maximum_supply+=100000000000;
+                        maximum_supply*=1000000;
 
                         const auto token_scheme=std::shared_ptr<qblocks::Token_Scheme>
                                 (new Simple_Token_Scheme(minted_tokens,melted_tokens,maximum_supply));
-                        /*auto metadata=QJsonDocument(metadatajson).toJson(QJsonDocument::Indented);
+                        auto metadata=QJsonDocument(metadatajson).toJson(QJsonDocument::Indented);
                         auto immetFea=std::shared_ptr<qblocks::Feature>(new Metadata_Feature(fl_array<quint16>(metadata)));
-                        auto metFea=std::shared_ptr<qblocks::Feature>(new Metadata_Feature(fl_array<quint16>("Iota-Qt")));*/
+                        auto metFea=std::shared_ptr<qblocks::Feature>(new Metadata_Feature(fl_array<quint16>("Iota-Qt")));
 
                         auto foundOut= std::shared_ptr<qblocks::Output>
-                                (new Foundry_Output(addr_bundle->amount-min_funds_alias,{aliasUnlcon},token_scheme,serial_number,{},{},{}));
+                                (new Foundry_Output(addr_bundle->amount-min_funds_alias,{aliasUnlcon},token_scheme,serial_number,{metFea},{},{immetFea}));
                         auto tokenid=foundOut->get_id();
 
                         auto nativeToken=std::shared_ptr<Native_Token>(new Native_Token(tokenid,minted_tokens));
@@ -100,12 +100,9 @@ int main(int argc, char** argv)
 
                         c_array serializedEssence;
                         serializedEssence.from_object<Essence>(*essence);
-                        qDebug()<<serializedEssence.toHexString();
-                        auto buffer=QDataStream(&serializedEssence,QIODevice::ReadOnly);
-                        buffer.setByteOrder(QDataStream::LittleEndian);
-                        auto ssss=Essence::from_(buffer);
-                        qDebug()<<ssss->get_Json();
+
                         auto essence_hash=QCryptographicHash::hash(serializedEssence, QCryptographicHash::Blake2b_256);
+
                         addr_bundle->create_unlocks(essence_hash);
                         auto trpay=std::shared_ptr<qblocks::Payload>(new Transaction_Payload(essence,addr_bundle->unlocks));
                         auto block_=Block(trpay);
@@ -116,9 +113,9 @@ int main(int argc, char** argv)
                 info->deleteLater();
 
             });
-            iota_client->get_alias_outputs(node_outputs_,"stateController="+address);
+            iota_client->get_outputs<qblocks::Output::Alias_typ>(node_outputs_,"stateController="+address);
         });
-        iota_client->get_basic_outputs(node_outputs_,"address="+address);
+        iota_client->get_outputs<qblocks::Output::Basic_typ>(node_outputs_,"address="+address);
     });
 
 

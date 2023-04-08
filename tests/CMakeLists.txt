@@ -71,3 +71,8 @@ qt_add_executable(alias_state_transition
         )
 add_test(NAME alias_state_transition COMMAND alias_state_transition)
 target_link_libraries(alias_state_transition PRIVATE qclient qaddr_bundle qslip10 qed25519)
+qt_add_executable(move_tokens_from_foundry
+       move_tokens_from_foundry.cpp
+        )
+add_test(NAME move_tokens_from_foundry COMMAND move_tokens_from_foundry)
+target_link_libraries(move_tokens_from_foundry PRIVATE qclient qaddr_bundle qslip10 qed25519)

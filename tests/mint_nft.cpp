@@ -46,7 +46,7 @@ int main(int argc, char** argv)
         const auto address=addr_bundle->get_address_bech32(info->bech32Hrp);
         qDebug()<<"address:"<<address;
         auto node_outputs_=new Node_outputs();
-        iota_client->get_basic_outputs(node_outputs_,"address="+address);
+        iota_client->get_outputs<qblocks::Output::Basic_typ>(node_outputs_,"address="+address);
 
         QObject::connect(node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
 

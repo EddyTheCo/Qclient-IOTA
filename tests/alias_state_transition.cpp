@@ -81,7 +81,7 @@ int main(int argc, char** argv)
             node_outputs_->deleteLater();
             info->deleteLater();
         });
-        iota_client->get_alias_outputs(node_outputs_,"stateController="+address);
+        iota_client->get_outputs<qblocks::Output::Alias_typ>(node_outputs_,"stateController="+address);
     });
 
     return a->exec();
