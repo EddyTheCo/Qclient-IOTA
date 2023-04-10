@@ -48,7 +48,10 @@ public:
         });
 
     }
-
+    static quint64 get_deposit(const std::shared_ptr<qblocks::Output> out,const Node_info *info)
+    {
+        return out->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
+    }
     void set_node_address(const QUrl node_address_m);
     QUrl get_node_address(void)const{return rest_node_address_;}
     QString get_jwt(void)const{return JWT;}
