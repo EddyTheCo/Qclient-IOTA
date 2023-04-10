@@ -1,11 +1,10 @@
 #include"client/qclient.hpp"
 #include"crypto/qed25519.hpp"
-#include"block/qblock.hpp"
 #include"crypto/qslip10.hpp"
 #include"qaddr_bundle.hpp"
-#include<iostream>
+
 #include <QCoreApplication>
-#include <QCryptographicHash>
+
 #include<QJsonDocument>
 #undef NDEBUG
 #include <assert.h>
@@ -37,7 +36,6 @@ int main(int argc, char** argv)
     metadatajson.insert("standard","IRC27");
     metadatajson.insert("version","v1.0");
     metadatajson.insert("type","image/png");
-    metadatajson.insert("uri","https://eddytheco.github.io/profpic.png");
     metadatajson.insert("name","profile picture");
 
     auto info=iota_client->get_api_core_v2_info();
@@ -46,7 +44,6 @@ int main(int argc, char** argv)
         const auto address=addr_bundle->get_address_bech32(info->bech32Hrp);
         qDebug()<<"address:"<<address;
         auto node_outputs_=new Node_outputs();
-        iota_client->get_outputs<qblocks::Output::Basic_typ>(node_outputs_,"address="+address);
 
         QObject::connect(node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
 
@@ -57,30 +54,30 @@ int main(int argc, char** argv)
 
             auto addUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Address_Unlock_Condition(eddAddr));
 
-            auto NftOut= std::shared_ptr<qblocks::Output>(new NFT_Output(0,{addUnlcon},{},{},{issuerFea,metFea})); //burn tokens
+            auto NftOut= std::shared_ptr<qblocks::Output>(new NFT_Output(0,{addUnlcon},{},{},{issuerFea,metFea}));
 
 
-            const auto stora_deposit=NftOut->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
+            const auto stora_deposit=Client::get_deposit(NftOut,info);
+            NftOut->amount_=stora_deposit;
             qDebug()<<"stora_deposit:"<<stora_deposit;
-
 
             addr_bundle->consume_outputs(node_outputs_->outs_,stora_deposit);
             if(addr_bundle->amount>=stora_deposit)
             {
                 qDebug()<<"amount:"<<addr_bundle->amount;
-                auto BaOut=std::shared_ptr<qblocks::Output>(new Basic_Output(0,{addUnlcon},{},{}));
+                auto BaOut=std::shared_ptr<qblocks::Output>(new Basic_Output(0,{addUnlcon},{},addr_bundle->get_tokens()));
                 if(addr_bundle->amount>stora_deposit)
                 {
 
-                    const auto min_deposit=BaOut->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
+                    auto min_deposit=Client::get_deposit(BaOut,info);
                     qDebug()<<"min_deposit:"<<min_deposit;
                     if(min_deposit>addr_bundle->amount-stora_deposit)
                     {
-
                         addr_bundle->consume_outputs(
                                     node_outputs_->outs_,min_deposit-(addr_bundle->amount-stora_deposit));
+                        BaOut->native_tokens_=addr_bundle->get_tokens();
+                        min_deposit=Client::get_deposit(BaOut,info);
                         if(addr_bundle->amount>=min_deposit+stora_deposit)BaOut->amount_=addr_bundle->amount-stora_deposit;
-                        qDebug()<<"baamount:"<<addr_bundle->amount;
                     }
                     else
                     {
@@ -88,7 +85,7 @@ int main(int argc, char** argv)
                     }
 
                 }
-                NftOut->amount_=stora_deposit;
+
                 std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{NftOut};
                 if(BaOut->amount_)the_outputs_.push_back(BaOut);
                 the_outputs_.insert(the_outputs_.end(), addr_bundle->ret_outputs.begin(), addr_bundle->ret_outputs.end());
@@ -106,6 +103,7 @@ int main(int argc, char** argv)
             }
             info->deleteLater();
         });
+        iota_client->get_outputs<qblocks::Output::Basic_typ>(node_outputs_,"address="+address);
     });
 
 
