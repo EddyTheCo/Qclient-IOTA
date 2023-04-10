@@ -72,9 +72,7 @@ export(EXPORT qclientTargets
 	FILE "${CMAKE_CURRENT_BINARY_DIR}/qclientTargets.cmake"
 	)
 
+
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    include(CTest)
-endif()
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-    add_subdirectory(tests)
+    add_subdirectory(examples)
 endif()

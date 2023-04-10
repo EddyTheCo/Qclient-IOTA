@@ -33,6 +33,12 @@ int main(int argc, char** argv)
     auto keys=MK.slip10_key_from_path(path);
 
 
+    QJsonObject metadatajson;
+    metadatajson.insert("standard","IRC27");
+    metadatajson.insert("version","v1.0");
+    metadatajson.insert("type","image/png");
+    metadatajson.insert("uri","https://eddytheco.github.io/profpic.png");
+    metadatajson.insert("name","profile picture");
 
     auto info=iota_client->get_api_core_v2_info();
     QObject::connect(info,&Node_info::finished,a,[=]( ){
@@ -45,15 +51,18 @@ int main(int argc, char** argv)
         QObject::connect(node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
 
             auto eddAddr=addr_bundle->get_address();
+            auto issuerFea=std::shared_ptr<qblocks::Feature>(new Issuer_Feature(eddAddr));
+            auto metadata=QJsonDocument(metadatajson).toJson(QJsonDocument::Indented);
+            auto metFea=std::shared_ptr<qblocks::Feature>(new Metadata_Feature(fl_array<quint16>(metadata)));
 
             auto addUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Address_Unlock_Condition(eddAddr));
-            auto stateUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new State_Controller_Address_Unlock_Condition(eddAddr));
-            auto goveUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Governor_Address_Unlock_Condition(eddAddr));
 
-            auto aliasOut= std::shared_ptr<qblocks::Output>(new Alias_Output(0,{stateUnlcon,goveUnlcon},0,0)); //burn tokens
+            auto NftOut= std::shared_ptr<qblocks::Output>(new NFT_Output(0,{addUnlcon},{},{},{issuerFea,metFea})); //burn tokens
 
-            const auto stora_deposit=aliasOut->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
+
+            const auto stora_deposit=NftOut->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
             qDebug()<<"stora_deposit:"<<stora_deposit;
+
 
             addr_bundle->consume_outputs(node_outputs_->outs_,stora_deposit);
             if(addr_bundle->amount>=stora_deposit)
@@ -69,29 +78,26 @@ int main(int argc, char** argv)
                     {
 
                         addr_bundle->consume_outputs(
-                        node_outputs_->outs_,min_deposit-(addr_bundle->amount-stora_deposit));
+                                    node_outputs_->outs_,min_deposit-(addr_bundle->amount-stora_deposit));
                         if(addr_bundle->amount>=min_deposit+stora_deposit)BaOut->amount_=addr_bundle->amount-stora_deposit;
                         qDebug()<<"baamount:"<<addr_bundle->amount;
                     }
                     else
                     {
-                       BaOut->amount_=addr_bundle->amount-stora_deposit;
+                        BaOut->amount_=addr_bundle->amount-stora_deposit;
                     }
 
                 }
-                aliasOut->amount_=stora_deposit;
-                std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{aliasOut};
+                NftOut->amount_=stora_deposit;
+                std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{NftOut};
                 if(BaOut->amount_)the_outputs_.push_back(BaOut);
-                the_outputs_.insert(the_outputs_.end(),addr_bundle->ret_outputs.begin(),addr_bundle->ret_outputs.end());
+                the_outputs_.insert(the_outputs_.end(), addr_bundle->ret_outputs.begin(), addr_bundle->ret_outputs.end());
+
                 auto Inputs_Commitment=c_array(QCryptographicHash::hash(addr_bundle->Inputs_Commitments, QCryptographicHash::Blake2b_256));
                 auto essence=std::shared_ptr<qblocks::Essence>(
                             new Transaction_Essence(info->network_id_,addr_bundle->inputs,Inputs_Commitment,the_outputs_,nullptr));
-                c_array serializedEssence;
-                serializedEssence.from_object<Essence>(*essence);
 
-                auto essence_hash=QCryptographicHash::hash(serializedEssence, QCryptographicHash::Blake2b_256);
-
-                addr_bundle->create_unlocks(essence_hash);
+                addr_bundle->create_unlocks(essence->get_hash());
 
                 auto trpay=std::shared_ptr<qblocks::Payload>(new Transaction_Payload(essence,addr_bundle->unlocks));
                 auto block_=Block(trpay);

@@ -1,6 +1,5 @@
-#include"client/qclient.hpp"
+
 #include"crypto/qed25519.hpp"
-#include"block/qblock.hpp"
 #include"crypto/qslip10.hpp"
 #include"qaddr_bundle.hpp"
 #include<iostream>
@@ -64,12 +63,8 @@ int main(int argc, char** argv)
                 auto essence=std::shared_ptr<qblocks::Essence>(
                             new Transaction_Essence(info->network_id_,addr_bundle->inputs,Inputs_Commitment,the_outputs_,nullptr));
 
-                c_array serializedEssence;
-                serializedEssence.from_object<Essence>(*essence);
 
-                auto essence_hash=QCryptographicHash::hash(serializedEssence, QCryptographicHash::Blake2b_256);
-
-                addr_bundle->create_unlocks(essence_hash);
+                addr_bundle->create_unlocks(essence->get_hash());
 
                 auto trpay=std::shared_ptr<qblocks::Payload>(new Transaction_Payload(essence,addr_bundle->unlocks));
                 auto block_=Block(trpay);

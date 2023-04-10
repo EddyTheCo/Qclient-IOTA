@@ -1,12 +1,10 @@
 #include"client/qclient.hpp"
 #include"crypto/qed25519.hpp"
-#include"block/qblock.hpp"
 #include"crypto/qslip10.hpp"
 #include"qaddr_bundle.hpp"
-#include<iostream>
+
 #include <QCoreApplication>
-#include <QCryptographicHash>
-#include<QJsonDocument>
+
 #undef NDEBUG
 #include <assert.h>
 
@@ -62,17 +60,14 @@ int main(int argc, char** argv)
                     addr_bundle->alias_outputs.front()->amount_=addr_bundle->amount;
 
                     std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{addr_bundle->alias_outputs.front()};
-
+                    the_outputs_.insert(the_outputs_.end(),addr_bundle->ret_outputs.begin(),addr_bundle->ret_outputs.end());
 
                     auto Inputs_Commitment=c_array(QCryptographicHash::hash(addr_bundle->Inputs_Commitments, QCryptographicHash::Blake2b_256));
                     auto essence=std::shared_ptr<qblocks::Essence>(
                                 new Transaction_Essence(info->network_id_,addr_bundle->inputs,Inputs_Commitment,the_outputs_,nullptr));
 
-                    c_array serializedEssence;
-                    serializedEssence.from_object<Essence>(*essence);
-                    qDebug()<<serializedEssence.toHexString();
-                    auto essence_hash=QCryptographicHash::hash(serializedEssence, QCryptographicHash::Blake2b_256);
-                    addr_bundle->create_unlocks(essence_hash);
+
+                    addr_bundle->create_unlocks(essence->get_hash());
                     auto trpay=std::shared_ptr<qblocks::Payload>(new Transaction_Payload(essence,addr_bundle->unlocks));
                     auto block_=Block(trpay);
                     iota_client->send_block(block_);
