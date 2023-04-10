@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 
                         if(alias_bundle->foundry_outputs.size())
                         {
-                            auto foundryOut=alias_bundle->foundry_outputs.front();
+
                             auto eddAddr=addr_bundle->get_address();
                             auto addUnlock=std::shared_ptr<qblocks::Unlock_Condition>(new Address_Unlock_Condition(eddAddr));
                             auto stateUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new State_Controller_Address_Unlock_Condition(eddAddr));
@@ -72,7 +72,12 @@ int main(int argc, char** argv)
                             aliasoutput->state_index_++;
 
                             aliasOut->amount_ = Client::get_deposit(aliasOut,info);
-                            foundryOut->amount_ = Client::get_deposit(foundryOut,info);
+                            quint64 amount_foundries=0;
+                            for(auto & v:alias_bundle->foundry_outputs)
+                            {
+                                v->amount_=Client::get_deposit(v,info);
+                                amount_foundries+=v->amount_;
+                            }
 
                             for(const auto& v:addr_bundle->get_tokens())
                             {
@@ -81,7 +86,7 @@ int main(int argc, char** argv)
 
                             const auto leftovers = addr_bundle->amount+alias_bundle->amount-
                                     aliasOut->amount_-
-                                    foundryOut->amount_;
+                                    amount_foundries;
 
                             auto BaOut = std::shared_ptr<qblocks::Output>
                                     (new Basic_Output(leftovers,{addUnlock},{},alias_bundle->get_tokens()));
@@ -90,7 +95,8 @@ int main(int argc, char** argv)
                             {
 
                                 std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{
-                                    aliasOut,foundryOut,BaOut};
+                                    aliasOut,BaOut};
+                                the_outputs_.insert(the_outputs_.end(),alias_bundle->foundry_outputs.begin(),alias_bundle->foundry_outputs.end());
                                 the_outputs_.insert(the_outputs_.end(),addr_bundle->ret_outputs.begin(),addr_bundle->ret_outputs.end());
                                 the_outputs_.insert(the_outputs_.end(),alias_bundle->ret_outputs.begin(),alias_bundle->ret_outputs.end());
 
