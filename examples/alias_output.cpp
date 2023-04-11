@@ -84,7 +84,8 @@ int main(int argc, char** argv)
                 if(BaOut->amount_)the_outputs_.push_back(BaOut);
                 the_outputs_.insert(the_outputs_.end(),addr_bundle->ret_outputs.begin(),addr_bundle->ret_outputs.end());
 
-                auto Inputs_Commitment=c_array(QCryptographicHash::hash(addr_bundle->Inputs_Commitments, QCryptographicHash::Blake2b_256));
+                auto Inputs_Commitment=Block::get_inputs_Commitment(addr_bundle->Inputs_hash);
+
                 auto essence=std::shared_ptr<qblocks::Essence>(
                             new Transaction_Essence(info->network_id_,addr_bundle->inputs,Inputs_Commitment,the_outputs_,nullptr));
 

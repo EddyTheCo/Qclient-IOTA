@@ -41,7 +41,6 @@ int main(int argc, char** argv)
         QObject::connect(node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
             auto alias_node_outputs_=new Node_outputs();
             QObject::connect(alias_node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
-
                 addr_bundle->consume_outputs(node_outputs_->outs_,0);
                 addr_bundle->consume_outputs(alias_node_outputs_->outs_,0);
                 qDebug()<<"alias:"<<addr_bundle->alias_outputs.size();
@@ -100,7 +99,8 @@ int main(int argc, char** argv)
                                 the_outputs_.insert(the_outputs_.end(),addr_bundle->ret_outputs.begin(),addr_bundle->ret_outputs.end());
                                 the_outputs_.insert(the_outputs_.end(),alias_bundle->ret_outputs.begin(),alias_bundle->ret_outputs.end());
 
-                                auto Inputs_Commitment=c_array(QCryptographicHash::hash(addr_bundle->Inputs_Commitments+alias_bundle->Inputs_Commitments, QCryptographicHash::Blake2b_256));
+                                auto Inputs_Commitment=Block::get_inputs_Commitment(addr_bundle->Inputs_hash+alias_bundle->Inputs_hash);
+
 
                                 auto inputs=addr_bundle->inputs;
                                 inputs.insert(inputs.end(),alias_bundle->inputs.begin(),alias_bundle->inputs.end());
