@@ -6,8 +6,7 @@
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include<QJsonDocument>
-#undef NDEBUG
-#include <assert.h>
+
 
 
 using namespace qiota::qblocks;

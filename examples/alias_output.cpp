@@ -7,9 +7,6 @@
 #include <QCoreApplication>
 
 
-#undef NDEBUG
-#include <assert.h>
-
 
 using namespace qiota::qblocks;
 using namespace qiota;

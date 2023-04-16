@@ -1,8 +1,7 @@
 #include"client/qclient.hpp"
-#include<iostream>
+
 #include <QCoreApplication>
-#undef NDEBUG
-#include <assert.h>
+
 
 
 using namespace qiota::qblocks;

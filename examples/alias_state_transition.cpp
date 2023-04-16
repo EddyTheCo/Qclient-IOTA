@@ -5,8 +5,6 @@
 
 #include <QCoreApplication>
 
-#undef NDEBUG
-#include <assert.h>
 
 
 using namespace qiota::qblocks;
@@ -49,17 +47,18 @@ int main(int argc, char** argv)
             {
                 if(addr_bundle->alias_outputs.size())
                 {
+                    auto aliasOut=addr_bundle->alias_outputs.front();
                     auto stateUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new State_Controller_Address_Unlock_Condition(eddAddr));
                     auto goveUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Governor_Address_Unlock_Condition(eddAddr));
 
-                    addr_bundle->alias_outputs.front()->unlock_conditions_={stateUnlcon,goveUnlcon};
+                    aliasOut->unlock_conditions_={stateUnlcon,goveUnlcon};
 
-                    auto aliasoutput=std::dynamic_pointer_cast<qblocks::Alias_Output>(addr_bundle->alias_outputs.front());
+                    auto aliasoutput=std::dynamic_pointer_cast<qblocks::Alias_Output>(aliasOut);
                     aliasoutput->state_index_++;
 
-                    addr_bundle->alias_outputs.front()->amount_=addr_bundle->amount;
+                    aliasOut->amount_=addr_bundle->amount;
 
-                    std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{addr_bundle->alias_outputs.front()};
+                    std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{aliasOut};
                     the_outputs_.insert(the_outputs_.end(),addr_bundle->ret_outputs.begin(),addr_bundle->ret_outputs.end());
 
                     auto Inputs_Commitment=Block::get_inputs_Commitment(addr_bundle->Inputs_hash);

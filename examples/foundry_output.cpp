@@ -6,9 +6,6 @@
 #include <QCoreApplication>
 
 #include<QJsonDocument>
-#undef NDEBUG
-#include <assert.h>
-
 
 using namespace qiota::qblocks;
 using namespace qiota;
@@ -70,7 +67,7 @@ int main(int argc, char** argv)
                     aliasOut->unlock_conditions_={stateUnlcon,goveUnlcon};
 
                     //********* State transition the alias output ********************//
-                    auto aliasoutput=std::dynamic_pointer_cast<qblocks::Alias_Output>(addr_bundle->alias_outputs.front());
+                    auto aliasoutput=std::dynamic_pointer_cast<qblocks::Alias_Output>(aliasOut);
                     aliasoutput->state_index_++;
 
                     //********* Add 1 to the foundry counter because we will create a foundry ********************//
@@ -115,7 +112,7 @@ int main(int argc, char** argv)
                     if(addr_bundle->amount>=aliasOut->amount_+Client::get_deposit(foundOut,info))
                     {
 
-                        std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{addr_bundle->alias_outputs.front(),foundOut};
+                        std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{aliasOut,foundOut};
                         the_outputs_.insert(the_outputs_.end(),addr_bundle->ret_outputs.begin(),addr_bundle->ret_outputs.end());
 
                         auto Inputs_Commitment=Block::get_inputs_Commitment(addr_bundle->Inputs_hash);
