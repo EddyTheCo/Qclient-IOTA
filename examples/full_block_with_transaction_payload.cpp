@@ -2,9 +2,9 @@
 #include"crypto/qed25519.hpp"
 #include"crypto/qslip10.hpp"
 #include"qaddr_bundle.hpp"
-#include<iostream>
+
 #include <QCoreApplication>
-#include <QCryptographicHash>
+
 #include<QJsonDocument>
 
 
