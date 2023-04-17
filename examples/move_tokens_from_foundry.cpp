@@ -44,7 +44,7 @@ int main(int argc, char** argv)
                 qDebug()<<"alias:"<<addr_bundle->alias_outputs.size();
                 if(addr_bundle->alias_outputs.size())
                 {
-                    auto aliasOut=addr_bundle->alias_outputs.front();
+                    auto aliasOut=addr_bundle->alias_outputs.back();
 
                     const auto ailasaddress=std::shared_ptr<qblocks::Address>(new Alias_Address(aliasOut->get_id()));
                     auto alias_bundle= new address_bundle(ailasaddress);
