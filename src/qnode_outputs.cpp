@@ -3,7 +3,7 @@
 #include<QDebug>
 namespace qiota{
 
-Node_outputs::Node_outputs(void):size_(0)
+Node_outputs::Node_outputs(QObject *parent):QObject(parent),size_(0)
 {
 
 }
