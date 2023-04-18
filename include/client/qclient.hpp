@@ -27,6 +27,7 @@ public:
         Connected
     };
     void send_block(const qblocks::Block& block_);
+
     template<qblocks::Output::types outtype>
     void get_outputs(Node_outputs* node_outs_,const QString& filter)const
     {
@@ -81,11 +82,9 @@ private:
     template<qblocks::Output::types outtype>
     Response* get_api_indexer_v1_outputs(const QString& filter)const
     {
-
         return get_reply_rest("/api/indexer/v1/outputs/"+qblocks::Output::typesstr[outtype],filter);
     }
 
-    Response* get_api_indexer_v1_outputs_nft_nftId(const QString& nftId)const;
 
     QUrl rest_node_address_;
     QNetworkAccessManager* nam;

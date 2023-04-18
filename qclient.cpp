@@ -135,8 +135,5 @@ Response* Client::get_api_core_v2_outputs_outputId_metadata(const QString& outpu
 {
     return get_reply_rest("/api/core/v2/outputs/"+outputId+"/metadata");
 }
-Response* Client::get_api_indexer_v1_outputs_nft_nftId(const QString& nftId)const
-{
-    return get_reply_rest("/api/indexer/v1/outputs/nft/"+nftId);
-}
+
 }
