@@ -27,6 +27,8 @@ public:
         case qblocks::Output::Foundry_typ:
             var.insert("FoundryId",out_->get_id().toHexString()) ;
             break;
+        case qblocks::Output::Basic_typ:
+            break;
         }
         return var;
     };
