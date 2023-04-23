@@ -49,7 +49,7 @@ public:
         });
 
     }
-    static quint64 get_deposit(const std::shared_ptr<qblocks::Output> out,const Node_info *info)
+    static quint64 get_deposit(const std::shared_ptr<const qblocks::Output>& out,const Node_info *info)
     {
         return out->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
     }
