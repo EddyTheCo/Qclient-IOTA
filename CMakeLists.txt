@@ -25,7 +25,7 @@ include(FetchContent)
 FetchContent_Declare(
         qblock
         GIT_REPOSITORY git@github.com:EddyTheCo/Qblock-IOTA.git
-        GIT_TAG develop
+        GIT_TAG main
         )
 FetchContent_MakeAvailable(qblock)
 FetchContent_Declare(
