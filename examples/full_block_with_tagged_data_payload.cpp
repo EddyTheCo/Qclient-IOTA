@@ -19,9 +19,10 @@ int main(int argc, char** argv)
     if(argc>1)iota_client->set_jwt(argv[2]);
 
 
-    auto data_=dataF("testing from Iota-Qt");
-    auto tag_=tagF("testing from Iota-Qt");
-    auto payload_=std::shared_ptr<Payload>(new Tagged_Data_Payload(tag_,data_));
+    const auto data_=dataF("WENN?, SOON");
+    const auto tag_=tagF("from Iota-Qt");
+    const auto payload_=Payload::Tagged_Data(tag_,data_);
+
     auto block_=Block(payload_);
 
     iota_client->send_block(block_);

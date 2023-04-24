@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     QObject::connect(info,&Node_info::finished,a,[=]( ){
         auto addr_bundle=new AddressBundle(qed25519::create_keypair(keys.secret_key()));
         const auto address=addr_bundle->get_address_bech32(info->bech32Hrp);
-        qDebug()<<"address:"<<address;
+
         auto node_outputs_=new Node_outputs();
 
 
@@ -48,27 +48,27 @@ int main(int argc, char** argv)
                 if(addr_bundle->alias_outputs.size())
                 {
                     auto aliasOut=addr_bundle->alias_outputs.front();
-                    auto stateUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new State_Controller_Address_Unlock_Condition(eddAddr));
-                    auto goveUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Governor_Address_Unlock_Condition(eddAddr));
+                    auto stateUnlcon=Unlock_Condition::State_Controller_Address(eddAddr);
+
+                    auto goveUnlcon=Unlock_Condition::Governor_Address(eddAddr);
+
 
                     aliasOut->unlock_conditions_={stateUnlcon,goveUnlcon};
 
-                    auto aliasoutput=std::dynamic_pointer_cast<qblocks::Alias_Output>(aliasOut);
+                    auto aliasoutput=std::static_pointer_cast<Alias_Output>(aliasOut);
                     aliasoutput->state_index_++;
 
                     aliasOut->amount_=addr_bundle->amount;
 
-                    std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{aliasOut};
+                    pvector<const Output> the_outputs_{aliasOut};
                     the_outputs_.insert(the_outputs_.end(),addr_bundle->ret_outputs.begin(),addr_bundle->ret_outputs.end());
 
                     auto Inputs_Commitment=Block::get_inputs_Commitment(addr_bundle->Inputs_hash);
 
-                    auto essence=std::shared_ptr<qblocks::Essence>(
-                                new Transaction_Essence(info->network_id_,addr_bundle->inputs,Inputs_Commitment,the_outputs_,nullptr));
-
+                    auto essence=Essence::Transaction(info->network_id_,addr_bundle->inputs,Inputs_Commitment,the_outputs_);
 
                     addr_bundle->create_unlocks(essence->get_hash());
-                    auto trpay=std::shared_ptr<qblocks::Payload>(new Transaction_Payload(essence,addr_bundle->unlocks));
+                    auto trpay=Payload::Transaction(essence,addr_bundle->unlocks);
                     auto block_=Block(trpay);
                     iota_client->send_block(block_);
                 }
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
             node_outputs_->deleteLater();
             info->deleteLater();
         });
-        iota_client->get_outputs<qblocks::Output::Alias_typ>(node_outputs_,"stateController="+address);
+        iota_client->get_outputs<Output::Alias_typ>(node_outputs_,"stateController="+address);
     });
 
     return a->exec();

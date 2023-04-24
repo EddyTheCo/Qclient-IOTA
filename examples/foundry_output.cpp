@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     QObject::connect(info,&Node_info::finished,a,[=]( ){
         auto addr_bundle=new AddressBundle(qed25519::create_keypair(keys.secret_key()));
         const auto address=addr_bundle->get_address_bech32(info->bech32Hrp);
-        qDebug()<<"address:"<<address;
+
         auto node_outputs_=new Node_outputs();
 
         QObject::connect(node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
@@ -59,15 +59,18 @@ int main(int argc, char** argv)
                     //********* Get the first alias output from the consumed outputs ********************//
                     auto aliasOut=addr_bundle->alias_outputs.front();
 
-                    const auto addUnlock=std::shared_ptr<qblocks::Unlock_Condition>(new Address_Unlock_Condition(eddAddr));
-                    auto stateUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new State_Controller_Address_Unlock_Condition(eddAddr));
-                    auto goveUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Governor_Address_Unlock_Condition(eddAddr));
+                    const auto addUnlock=Unlock_Condition::Address(eddAddr);
+
+                    const auto stateUnlcon=Unlock_Condition::State_Controller_Address(eddAddr);
+
+                    const auto goveUnlcon=Unlock_Condition::Governor_Address(eddAddr);
+
 
                     //********* Reset the unlock conditions of the alias output ********************//
                     aliasOut->unlock_conditions_={stateUnlcon,goveUnlcon};
 
                     //********* State transition the alias output ********************//
-                    auto aliasoutput=std::dynamic_pointer_cast<qblocks::Alias_Output>(aliasOut);
+                    auto aliasoutput=std::static_pointer_cast<Alias_Output>(aliasOut);
                     aliasoutput->state_index_++;
 
                     //********* Add 1 to the foundry counter because we will create a foundry ********************//
@@ -84,23 +87,25 @@ int main(int argc, char** argv)
                     auto maximum_supply=quint256(100000000000);
                     maximum_supply*=1000000;
 
-                    const auto token_scheme=std::shared_ptr<qblocks::Token_Scheme>
-                            (new Simple_Token_Scheme(minted_tokens,melted_tokens,maximum_supply));
+                    const auto token_scheme=Token_Scheme::Simple(minted_tokens,melted_tokens,maximum_supply);
 
-                    auto metadata=QJsonDocument(metadatajson).toJson(QJsonDocument::Indented);
-                    auto immetFea=std::shared_ptr<qblocks::Feature>(new Metadata_Feature(fl_array<quint16>(metadata)));
-                    auto metFea=std::shared_ptr<qblocks::Feature>(new Metadata_Feature(fl_array<quint16>("Iota-Qt")));
+                    const auto metadata=QJsonDocument(metadatajson).toJson(QJsonDocument::Indented);
+                    const auto immetFea=Feature::Metadata(metadata);
 
-                    const auto ailasaddress=std::shared_ptr<qblocks::Address>(new Alias_Address(aliasOut->get_id()));
-                    auto aliasUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Immutable_Alias_Address_Unlock_Condition(ailasaddress));
+                    const auto metFea=Feature::Metadata("WENN? SOON");
+
+                    const auto ailasaddress=Address::Alias(aliasOut->get_id());
+
+                    const auto aliasUnlcon=Unlock_Condition::Immutable_Alias_Address(ailasaddress);
 
                     //********* Create the foundry output with all the amount ofthe consumed outputs minus alias output deposit storage ********************//
-                    auto foundOut= std::shared_ptr<qblocks::Output>
-                            (new Foundry_Output(addr_bundle->amount-aliasOut->amount_,{aliasUnlcon},token_scheme,serial_number,{metFea},{},{immetFea}));
+                    auto foundOut= Output::Foundry(addr_bundle->amount-aliasOut->amount_,{aliasUnlcon},
+                                                   token_scheme,serial_number,{},{immetFea},{metFea});
+
                     auto tokenid=foundOut->get_id();
 
                     //********* Create Native token from the foundry to put on output ********************//
-                    auto nativeToken=std::shared_ptr<Native_Token>(new Native_Token(tokenid,minted_tokens));
+                    auto nativeToken=Native_Token::Native(tokenid,minted_tokens);
 
                     //********* Add the new token to the list of tokens from consumed outputs ********************//
                     addr_bundle->native_tokens[nativeToken->token_id()]+=nativeToken->amount();
@@ -112,16 +117,15 @@ int main(int argc, char** argv)
                     if(addr_bundle->amount>=aliasOut->amount_+Client::get_deposit(foundOut,info))
                     {
 
-                        std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{aliasOut,foundOut};
+                        pvector<const Output> the_outputs_{aliasOut,foundOut};
                         the_outputs_.insert(the_outputs_.end(),addr_bundle->ret_outputs.begin(),addr_bundle->ret_outputs.end());
 
                         auto Inputs_Commitment=Block::get_inputs_Commitment(addr_bundle->Inputs_hash);
 
-                        auto essence=std::shared_ptr<qblocks::Essence>(
-                                    new Transaction_Essence(info->network_id_,addr_bundle->inputs,Inputs_Commitment,the_outputs_,nullptr));
+                        auto essence=Essence::Transaction(info->network_id_,addr_bundle->inputs,Inputs_Commitment,the_outputs_);
 
                         addr_bundle->create_unlocks(essence->get_hash());
-                        auto trpay=std::shared_ptr<qblocks::Payload>(new Transaction_Payload(essence,addr_bundle->unlocks));
+                        auto trpay=Payload::Transaction(essence,addr_bundle->unlocks);
                         auto block_=Block(trpay);
                         iota_client->send_block(block_);
                     }
@@ -132,11 +136,10 @@ int main(int argc, char** argv)
                 info->deleteLater();
 
             });
-            iota_client->get_outputs<qblocks::Output::Alias_typ>(alias_node_outputs_,"stateController="+address);
+            iota_client->get_outputs<Output::Alias_typ>(alias_node_outputs_,"stateController="+address);
         });
-        iota_client->get_outputs<qblocks::Output::Basic_typ>(node_outputs_,"address="+address);
+        iota_client->get_outputs<Output::Basic_typ>(node_outputs_,"address="+address);
     });
-
 
     return a->exec();
 

@@ -6,8 +6,6 @@
 #include <QCoreApplication>
 
 #include<QJsonDocument>
-#undef NDEBUG
-#include <assert.h>
 
 
 using namespace qiota::qblocks;
@@ -42,35 +40,32 @@ int main(int argc, char** argv)
     QObject::connect(info,&Node_info::finished,a,[=]( ){
         auto addr_bundle=new AddressBundle(qed25519::create_keypair(keys.secret_key()));
         const auto address=addr_bundle->get_address_bech32(info->bech32Hrp);
-        qDebug()<<"address:"<<address;
+
         auto node_outputs_=new Node_outputs();
 
         QObject::connect(node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
 
-            auto eddAddr=addr_bundle->get_address();
-            auto issuerFea=std::shared_ptr<qblocks::Feature>(new Issuer_Feature(eddAddr));
-            auto metadata=QJsonDocument(metadatajson).toJson(QJsonDocument::Indented);
-            auto metFea=std::shared_ptr<qblocks::Feature>(new Metadata_Feature(fl_array<quint16>(metadata)));
+            const auto eddAddr=addr_bundle->get_address();
+            const auto issuerFea=Feature::Issuer(eddAddr);
+            const auto metadata=QJsonDocument(metadatajson).toJson(QJsonDocument::Indented);
+            const auto metFea=Feature::Metadata(metadata);
+            const auto addUnlcon=Unlock_Condition::Address(eddAddr);
 
-            auto addUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Address_Unlock_Condition(eddAddr));
 
-            auto NftOut= std::shared_ptr<qblocks::Output>(new NFT_Output(0,{addUnlcon},{},{},{issuerFea,metFea}));
-
+            auto NftOut= Output::NFT(0,{addUnlcon},{},{issuerFea,metFea});
 
             const auto stora_deposit=Client::get_deposit(NftOut,info);
             NftOut->amount_=stora_deposit;
-            qDebug()<<"stora_deposit:"<<stora_deposit;
+
 
             addr_bundle->consume_outputs(node_outputs_->outs_,stora_deposit);
             if(addr_bundle->amount>=stora_deposit)
             {
-                qDebug()<<"amount:"<<addr_bundle->amount;
-                auto BaOut=std::shared_ptr<qblocks::Output>(new Basic_Output(0,{addUnlcon},{},addr_bundle->get_tokens()));
+                auto BaOut=Output::Basic(0,{addUnlcon},addr_bundle->get_tokens());
                 if(addr_bundle->amount>stora_deposit)
                 {
 
                     auto min_deposit=Client::get_deposit(BaOut,info);
-                    qDebug()<<"min_deposit:"<<min_deposit;
                     if(min_deposit>addr_bundle->amount-stora_deposit)
                     {
                         addr_bundle->consume_outputs(
@@ -86,25 +81,26 @@ int main(int argc, char** argv)
 
                 }
 
-                std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{NftOut};
+                pvector<const Output> the_outputs_{NftOut};
                 if(BaOut->amount_)the_outputs_.push_back(BaOut);
+
                 the_outputs_.insert(the_outputs_.end(), addr_bundle->ret_outputs.begin(), addr_bundle->ret_outputs.end());
 
                 auto Inputs_Commitment=Block::get_inputs_Commitment(addr_bundle->Inputs_hash);
 
-                auto essence=std::shared_ptr<qblocks::Essence>(
-                            new Transaction_Essence(info->network_id_,addr_bundle->inputs,Inputs_Commitment,the_outputs_,nullptr));
+                auto essence=Essence::Transaction(info->network_id_,addr_bundle->inputs,Inputs_Commitment,the_outputs_);
 
                 addr_bundle->create_unlocks(essence->get_hash());
 
-                auto trpay=std::shared_ptr<qblocks::Payload>(new Transaction_Payload(essence,addr_bundle->unlocks));
+                auto trpay=Payload::Transaction(essence,addr_bundle->unlocks);
+
                 auto block_=Block(trpay);
                 iota_client->send_block(block_);
 
             }
             info->deleteLater();
         });
-        iota_client->get_outputs<qblocks::Output::Basic_typ>(node_outputs_,"address="+address);
+        iota_client->get_outputs<Output::Basic_typ>(node_outputs_,"address="+address);
     });
 
 

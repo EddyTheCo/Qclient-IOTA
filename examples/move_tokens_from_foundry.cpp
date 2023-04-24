@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     QObject::connect(info,&Node_info::finished,a,[=]( ){
         auto addr_bundle=new AddressBundle(qed25519::create_keypair(keys.secret_key()));
         const auto address=addr_bundle->get_address_bech32(info->bech32Hrp);
-        qDebug()<<"address:"<<address;
+
         auto node_outputs_=new Node_outputs();
 
         QObject::connect(node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
@@ -41,31 +41,31 @@ int main(int argc, char** argv)
             QObject::connect(alias_node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
                 addr_bundle->consume_outputs(node_outputs_->outs_,0);
                 addr_bundle->consume_outputs(alias_node_outputs_->outs_,0);
-                qDebug()<<"alias:"<<addr_bundle->alias_outputs.size();
+
                 if(addr_bundle->alias_outputs.size())
                 {
                     auto aliasOut=addr_bundle->alias_outputs.back();
 
-                    const auto ailasaddress=std::shared_ptr<qblocks::Address>(new Alias_Address(aliasOut->get_id()));
+                    const auto ailasaddress=Address::Alias(aliasOut->get_id());
+
                     auto alias_bundle= new address_bundle(ailasaddress);
-                    qDebug()<<"aliasAddress="<<alias_bundle->get_address_bech32(info->bech32Hrp);
+
                     auto foundry_node_outputs_=new Node_outputs();
                     QObject::connect(foundry_node_outputs_,&Node_outputs::finished,iota_client,[=]( ){
 
                         alias_bundle->consume_outputs(foundry_node_outputs_->outs_,0);
-                        qDebug()<<"foundries:"<<alias_bundle->foundry_outputs.size();
 
                         if(alias_bundle->foundry_outputs.size())
                         {
 
-                            auto eddAddr=addr_bundle->get_address();
-                            auto addUnlock=std::shared_ptr<qblocks::Unlock_Condition>(new Address_Unlock_Condition(eddAddr));
-                            auto stateUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new State_Controller_Address_Unlock_Condition(eddAddr));
-                            auto goveUnlcon=std::shared_ptr<qblocks::Unlock_Condition>(new Governor_Address_Unlock_Condition(eddAddr));
+                            const auto eddAddr=addr_bundle->get_address();
+                            const auto addUnlock=Unlock_Condition::Address(eddAddr);
+                            const auto stateUnlcon=Unlock_Condition::State_Controller_Address(eddAddr);
+                            const auto goveUnlcon=Unlock_Condition::Governor_Address(eddAddr);
 
                             aliasOut->unlock_conditions_ = {stateUnlcon,goveUnlcon};
 
-                            auto aliasoutput = std::dynamic_pointer_cast<qblocks::Alias_Output>(aliasOut);
+                            auto aliasoutput = std::static_pointer_cast<Alias_Output>(aliasOut);
                             aliasoutput->state_index_++;
 
                             aliasOut->amount_ = Client::get_deposit(aliasOut,info);
@@ -85,33 +85,30 @@ int main(int argc, char** argv)
                                     aliasOut->amount_-
                                     amount_foundries;
 
-                            auto BaOut = std::shared_ptr<qblocks::Output>
-                                    (new Basic_Output(leftovers,{addUnlock},{},alias_bundle->get_tokens()));
+                            const auto BaOut = Output::Basic(leftovers,{addUnlock},alias_bundle->get_tokens());
 
                             if(leftovers>=Client::get_deposit(BaOut,info))
                             {
 
-                                std::vector<std::shared_ptr<qblocks::Output>> the_outputs_{
-                                    aliasOut,BaOut};
+                                pvector<const Output> the_outputs_{aliasOut,BaOut};
                                 the_outputs_.insert(the_outputs_.end(),alias_bundle->foundry_outputs.begin(),alias_bundle->foundry_outputs.end());
                                 the_outputs_.insert(the_outputs_.end(),addr_bundle->ret_outputs.begin(),addr_bundle->ret_outputs.end());
                                 the_outputs_.insert(the_outputs_.end(),alias_bundle->ret_outputs.begin(),alias_bundle->ret_outputs.end());
 
                                 auto Inputs_Commitment=Block::get_inputs_Commitment(addr_bundle->Inputs_hash+alias_bundle->Inputs_hash);
 
-
                                 auto inputs=addr_bundle->inputs;
                                 inputs.insert(inputs.end(),alias_bundle->inputs.begin(),alias_bundle->inputs.end());
 
-                                auto essence=std::shared_ptr<qblocks::Essence>(
-                                            new Transaction_Essence(info->network_id_,inputs,Inputs_Commitment,the_outputs_,nullptr));
+                                auto essence=Essence::Transaction(info->network_id_,inputs,Inputs_Commitment,the_outputs_);
 
                                 addr_bundle->create_unlocks(essence->get_hash());
                                 auto unlocks=addr_bundle->unlocks;
                                 alias_bundle->create_unlocks(essence->get_hash(),unlocks.size()-1);
                                 unlocks.insert(unlocks.end(),alias_bundle->unlocks.begin(),alias_bundle->unlocks.end());
 
-                                auto trpay=std::shared_ptr<qblocks::Payload>(new Transaction_Payload(essence,unlocks));
+                                auto trpay=Payload::Transaction(essence,unlocks);
+
                                 auto block_=Block(trpay);
                                 iota_client->send_block(block_);
                             }
@@ -122,12 +119,12 @@ int main(int argc, char** argv)
                         foundry_node_outputs_->deleteLater();
                         info->deleteLater();
                     });
-                    iota_client->get_outputs<qblocks::Output::Foundry_typ>(foundry_node_outputs_,"aliasAddress="+alias_bundle->get_address_bech32(info->bech32Hrp));
+                    iota_client->get_outputs<Output::Foundry_typ>(foundry_node_outputs_,"aliasAddress="+alias_bundle->get_address_bech32(info->bech32Hrp));
                 }
             });
-            iota_client->get_outputs<qblocks::Output::Alias_typ>(alias_node_outputs_,"stateController="+address);
+            iota_client->get_outputs<Output::Alias_typ>(alias_node_outputs_,"stateController="+address);
         });
-        iota_client->get_outputs<qblocks::Output::Basic_typ>(node_outputs_,"address="+address);
+        iota_client->get_outputs<Output::Basic_typ>(node_outputs_,"address="+address);
     });
 
 
