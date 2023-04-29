@@ -26,7 +26,7 @@ void Client::set_node_address(const QUrl node_address_m)
             {
                 set_State(Connected);
             }
-
+            info->deleteLater();
         });
     }
 }
