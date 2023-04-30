@@ -3,6 +3,7 @@
 #include"client/qnode_response.hpp"
 #include<QByteArray>
 #include <QJsonValue>
+#include <QJsonObject>
 namespace qiota{
 
 
@@ -11,6 +12,8 @@ class Node_info : public QObject
     Q_OBJECT
 public:
     Node_info(Response*);
+    QJsonObject amount_json(const quint64& amount_);
+
     quint64 network_id_;
     quint8  protocol_version,decimals;
     quint32 min_pow_score;

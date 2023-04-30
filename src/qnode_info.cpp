@@ -1,6 +1,5 @@
 #include"client/qnode_info.hpp"
 #include<QDataStream>
-#include<QJsonObject>
 #include<QJsonArray>
 #include<QDebug>
 #include <QCryptographicHash>
@@ -42,6 +41,30 @@ void Node_info::fill(QJsonValue data)
 
     emit finished();
     response_->deleteLater();
+}
+
+QJsonObject Node_info::amount_json(const quint64& amount_)
+{
+    QJsonObject shortValue;
+    shortValue.insert("unit",unit);
+    shortValue.insert("value",QString::number(amount_*1.0/std::pow(10,decimals),'g', 5));
+
+    QJsonObject largeValue;
+    largeValue.insert("unit",subunit);
+    largeValue.insert("value",QString::number(amount_));
+    QJsonObject var;
+    var.insert("shortValue",shortValue);
+    var.insert("largeValue",largeValue);
+
+    if(amount_>std::pow(10,decimals*0.8))
+    {
+        var.insert("default",0);
+    }
+    else
+    {
+        var.insert("default",1);
+    }
+    return var;
 }
 
 }
