@@ -1,0 +1,102 @@
+name: push-build-release
+run-name: ${{ github.actor }} pushed 
+on: 
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
+jobs:
+  build_test_package:
+    if: startsWith(github.ref, 'refs/tags/')
+    strategy:
+      matrix:
+        os: [ubuntu-latest,macos-latest,windows-latest]
+        sharedLib: [on,off]
+    runs-on: ${{ matrix.os }}
+
+
+    steps:
+          
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Install dependencies on windows
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          choco install ninja cmake
+          ninja --version
+          cmake --version
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install dependencies on ubuntu
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install ninja-build cmake
+          ninja --version
+          cmake --version
+          gcc --version
+          
+      - name: Install dependencies on macos
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          brew install cmake ninja
+          ninja --version
+          cmake --version
+
+      - name: Create build directory
+        run:  cmake -E make_directory ${{runner.temp}}/build
+
+
+      - name: Configure
+        working-directory: ${{ runner.temp }}/build
+        run: cmake -G Ninja -DCMAKE_BUILD_TYPE="release" -DBUILD_TESTING=ON -DCMAKE_INSTALL_PREFIX="../install" -DBUILD_SHARED_LIBS=${{ matrix.sharedLib }} ${{ github.workspace }}
+
+      - name: Build
+        working-directory: ${{ runner.temp }}/build
+        run: cmake --build .   
+
+      - name: Test
+        working-directory: ${{ runner.temp }}/build
+        run: ninja test
+
+      - name: Install
+        working-directory: ${{ runner.temp }}/build
+        run: cmake --install .
+
+      - name: Binary Package
+        working-directory: ${{ runner.temp }}/build
+        run: |
+          cpack -B package --config CPackConfig.cmake
+          cmake -E remove_directory package/_CPack_Packages
+      
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}_sharedlib_${{ matrix.sharedLib }}
+          path: ${{ runner.temp }}/build/package/* 
+
+  release:
+    needs: build_test_package
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+
+    steps:
+          
+      - uses: actions/checkout@v3
+    
+      - uses: actions/download-artifact@v3
+        with:
+           path: artifacts
+      - name: Display structure of downloaded files
+        run: ls -R
+          
+      - name: Releases 
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./artifacts/*/*
+      
+
