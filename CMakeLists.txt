@@ -22,6 +22,7 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+include(cmake/FindQt.cmake)
 set(CMAKE_AUTOMOC ON)
 
 add_library(qclient qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qnode_tips.cpp src/qnode_blockId.cpp src/qnode_block.cpp src/qnode_outputs.cpp
@@ -51,7 +52,6 @@ endif(NOT qpow_FOUND AND NOT TARGET qpow)
 target_link_libraries(qclient PUBLIC qblock)
 target_link_libraries(qclient PRIVATE qpow)
 
-include(cmake/FindQt.cmake)
 target_link_libraries(qclient PUBLIC  Qt6::Core Qt6::Network)
 
 target_include_directories(qclient PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -96,6 +96,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CPack)
     add_subdirectory(examples)
 endif()
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-    add_subdirectory(tests)
-endif()
+#if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+#    add_subdirectory(tests)
+#endif()

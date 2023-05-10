@@ -2,11 +2,6 @@ cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 
 project(examples VERSION 0.1 DESCRIPTION "diferent examples for the library" LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-qt_standard_project_setup()
 
 include(FetchContent)
 find_package(qaddr_bundle 0 QUIET )

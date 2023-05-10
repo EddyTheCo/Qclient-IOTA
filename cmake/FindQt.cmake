@@ -7,7 +7,7 @@ if(NOT Qt6_FOUND AND NOT TARGET Qt6::Core)
 set(QT_BUILD_TESTS OFF)
 set(QT_BUILD_EXAMPLES OFF)
 set(QT_FEATURE_sql OFF)
-set(QT_FEATURE_network OFF)
+#set(QT_FEATURE_network OFF)
 set(QT_FEATURE_gui OFF)
 #set(QT_FEATURE_regularexpression OFF)
 set(QT_FEATURE_concurrent OFF)
@@ -29,7 +29,7 @@ include(FetchContent)
 FetchContent_Declare(
         qtbase
         GIT_REPOSITORY git://code.qt.io/qt/qtbase.git
-        GIT_TAG dev 
+        GIT_TAG 6.5.0 
         )
 FetchContent_GetProperties(qtbase)
 if(NOT qtbase_POPULATED)
