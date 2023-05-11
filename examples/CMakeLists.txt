@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 
 project(examples VERSION 0.1 DESCRIPTION "diferent examples for the library" LANGUAGES CXX)
 
-
+qt_standard_project_setup()
 include(FetchContent)
 find_package(qaddr_bundle 0 QUIET )
 if(NOT qaddr_bundle_FOUND AND NOT TARGET qaddr_bundle)
