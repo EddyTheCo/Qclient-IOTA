@@ -2,8 +2,10 @@ name: push-build-release
 run-name: ${{ github.actor }} pushed 
 on: 
   push:
-    branches:
-      - 'develop'
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main,develop]
 jobs:
   build_test_package:
     strategy:
