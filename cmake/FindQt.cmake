@@ -1,6 +1,5 @@
 
-find_package(Qt6 QUIET COMPONENTS Core)
-
+find_package(Qt6 REQUIRED COMPONENTS Core Network)
 
 if(NOT Qt6_FOUND AND NOT TARGET Qt6::Core)
 
