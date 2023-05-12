@@ -2,31 +2,37 @@ cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 
 project(examples VERSION 0.1 DESCRIPTION "diferent examples for the library" LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 qt_standard_project_setup()
-
 include(FetchContent)
+find_package(qaddr_bundle 0 QUIET )
+if(NOT qaddr_bundle_FOUND AND NOT TARGET qaddr_bundle)
 FetchContent_Declare(
-    qaddr_bundle
-    GIT_REPOSITORY git@github.com:EddyTheCo/QAddrBundle.git
-    GIT_TAG main 
-)
+        qaddr_bundle
+        GIT_REPOSITORY https://github.com/EddyTheCo/QAddrBundle.git
+        GIT_TAG v0.0.1
+        )
 FetchContent_MakeAvailable(qaddr_bundle)
+endif(NOT qaddr_bundle_FOUND AND NOT TARGET qaddr_bundle)
+
+find_package(qslip10 0 QUIET )
+if(NOT qslip10_FOUND AND NOT TARGET qslip10)
 FetchContent_Declare(
-    qslip10
-    GIT_REPOSITORY git@github.com:EddyTheCo/Qslip10.git
-    GIT_TAG main
-)
+        qslip10 
+        GIT_REPOSITORY https://github.com/EddyTheCo/Qslip10.git
+        GIT_TAG v0.0.1
+        )
 FetchContent_MakeAvailable(qslip10)
+endif(NOT qslip10_FOUND AND NOT TARGET qslip10)
+
+find_package(qed25519 0 QUIET )
+if(NOT qed25519_FOUND AND NOT TARGET qed25519)
 FetchContent_Declare(
-    qed25519
-    GIT_REPOSITORY git@github.com:EddyTheCo/Qed25519.git
-    GIT_TAG main
-)
+        qed25519 
+        GIT_REPOSITORY https://github.com/EddyTheCo/Qed25519.git
+        GIT_TAG v0.0.1
+        )
 FetchContent_MakeAvailable(qed25519)
+endif(NOT qed25519_FOUND AND NOT TARGET qed25519)
 
 
 foreach(example "full_block_with_tagged_data_payload"
@@ -38,9 +44,7 @@ foreach(example "full_block_with_tagged_data_payload"
         "alias_state_transition"
     )
 
-message(STATUS "Setting example   ${example}")
 qt_add_executable( ${example}  ${example}.cpp)
-
 
 target_link_libraries(${example} PRIVATE qclient qaddr_bundle qslip10 qed25519)
 

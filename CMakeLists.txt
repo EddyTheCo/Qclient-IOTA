@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 include(local_conf.cmake OPTIONAL)
-project(QtIotaClient VERSION 0.2 DESCRIPTION "IOTA-QT client library" LANGUAGES CXX)
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+include(cmake/VersionFromGit.cmake)
 
-set(CMAKE_AUTOMOC ON)
+version_from_git(
+	LOG       OFF
+  TIMESTAMP "%Y%m%d%H%M%S"
+)
+project(QtIotaClient VERSION ${VERSION} DESCRIPTION "Qt-IOTA client library for rest api" LANGUAGES CXX)
+
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 	message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
@@ -16,28 +22,36 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+include(cmake/FindQt.cmake)
+set(CMAKE_AUTOMOC ON)
 
 add_library(qclient qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qnode_tips.cpp src/qnode_blockId.cpp src/qnode_block.cpp src/qnode_outputs.cpp
     include/client/qnode_response.hpp include/client/qnode_info.hpp include/client/qnode_tips.hpp include/client/qclient.hpp include/client/qnode_blockId.hpp include/client/qnode_block.hpp
     include/client/qnode_outputs.hpp
 )
 include(FetchContent)
+find_package(qblock 0 QUIET )
+if(NOT qblock_FOUND AND NOT TARGET qblock)
 FetchContent_Declare(
         qblock
-        GIT_REPOSITORY git@github.com:EddyTheCo/Qblock-IOTA.git
-        GIT_TAG main
+        GIT_REPOSITORY https://github.com/EddyTheCo/Qblock-IOTA.git
+        GIT_TAG v0.0.1
         )
 FetchContent_MakeAvailable(qblock)
+endif(NOT qblock_FOUND AND NOT TARGET qblock)
+find_package(qblock 0 QUIET )
+if(NOT qpow_FOUND AND NOT TARGET qpow)
 FetchContent_Declare(
         qpow
-        GIT_REPOSITORY git@github.com:EddyTheCo/Qpow-IOTA.git
-        GIT_TAG main
+        GIT_REPOSITORY https://github.com/EddyTheCo/Qpow-IOTA.git
+        GIT_TAG v0.0.1
         )
 FetchContent_MakeAvailable(qpow)
+endif(NOT qpow_FOUND AND NOT TARGET qpow)
+
 target_link_libraries(qclient PUBLIC qblock)
 target_link_libraries(qclient PRIVATE qpow)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Network)
 target_link_libraries(qclient PUBLIC  Qt6::Core Qt6::Network)
 
 target_include_directories(qclient PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -60,8 +74,8 @@ configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
 	)
 write_basic_package_version_file(
 	"${CMAKE_CURRENT_BINARY_DIR}/qclientConfigVersion.cmake"
-	VERSION "0.1.1.0"
-	COMPATIBILITY AnyNewerVersion
+	VERSION ${VERSION}
+	COMPATIBILITY SameMajorVersion
 	)
 install(FILES
 	${CMAKE_CURRENT_BINARY_DIR}/qclientConfig.cmake
@@ -74,5 +88,14 @@ export(EXPORT qclientTargets
 
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    include(CTest)
+    set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-v${SEMVER}-${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_VERSION}-${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_CXX_COMPILER_ID}")
+    if(NOT BUILD_SHARED_LIBS)	    
+    set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}-static")
+    endif(NOT BUILD_SHARED_LIBS)		    
+    include(CPack)
     add_subdirectory(examples)
 endif()
+#if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+#    add_subdirectory(tests)
+#endif()
