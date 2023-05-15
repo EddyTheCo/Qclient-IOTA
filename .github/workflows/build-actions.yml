@@ -2,6 +2,7 @@ name: push-build-release
 run-name: ${{ github.actor }} pushed 
 on: 
   push:
+    branches: [main,develop]
     tags:
       - 'v*'
   pull_request:
@@ -14,6 +15,7 @@ jobs:
         sharedLib: [on,off]
     runs-on: ${{ matrix.os }}
     continue-on-error: true  
+
 
     steps:
           
@@ -45,13 +47,18 @@ jobs:
           ninja --version
           cmake --version
 
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.5.0'
+  
+
       - name: Create build directory
         run:  cmake -E make_directory ${{runner.temp}}/build
 
-
       - name: Configure
         working-directory: ${{ runner.temp }}/build
-        run: cmake -G Ninja -DCMAKE_BUILD_TYPE="release" -DBUILD_TESTING=ON -DCMAKE_INSTALL_PREFIX="../install" -DBUILD_SHARED_LIBS=${{ matrix.sharedLib }} ${{ github.workspace }}
+        run: qt-cmake -G Ninja -DCMAKE_BUILD_TYPE="release" -DBUILD_TESTING=ON -DCMAKE_INSTALL_PREFIX="../install" -DBUILD_SHARED_LIBS=${{ matrix.sharedLib }} ${{ github.workspace }}
 
       - name: Build
         working-directory: ${{ runner.temp }}/build
@@ -81,9 +88,9 @@ jobs:
     needs: build_test_package
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
-
 
     steps:
           
@@ -99,5 +106,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ./artifacts/*/*
-      
 
