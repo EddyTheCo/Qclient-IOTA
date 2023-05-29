@@ -20,3 +20,4 @@ jobs:
     with:
       os: ${{ matrix.os }}
       sharedLib: ${{ matrix.sharedLib }}
+      useThread: ${{ matrix.useThread }}
