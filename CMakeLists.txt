@@ -1,12 +1,18 @@
 cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 include(local_conf.cmake OPTIONAL)
-include(cmake/VersionFromGit.cmake)
 
+include(FetchContent)
+FetchContent_Declare(
+	ccommon
+	GIT_REPOSITORY https://github.com/EddyTheCo/Common.git
+	GIT_TAG main
+	)
+FetchContent_MakeAvailable(ccommon)
 version_from_git(
 	LOG       OFF
   TIMESTAMP "%Y%m%d%H%M%S"
 )
-project(QtIotaClient VERSION ${VERSION} DESCRIPTION "Qt-IOTA client library for rest api" LANGUAGES CXX)
+project(QtIotaClient VERSION ${VERSION} DESCRIPTION "Qt-IOTA client library for REST API" LANGUAGES CXX)
 
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -24,14 +30,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Network)
+find_package(Qt6 COMPONENTS Core Network)
+
+if (Qt6_FOUND)
 qt_standard_project_setup()
+endif(Qt6_FOUND)
 
 add_library(qclient qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qnode_tips.cpp src/qnode_blockId.cpp src/qnode_block.cpp src/qnode_outputs.cpp
     include/client/qnode_response.hpp include/client/qnode_info.hpp include/client/qnode_tips.hpp include/client/qclient.hpp include/client/qnode_blockId.hpp include/client/qnode_block.hpp
     include/client/qnode_outputs.hpp
 )
-include(FetchContent)
+
+
+if (Qt6_FOUND)
+target_link_libraries(qclient PUBLIC  Qt6::Core Qt6::Network)
+endif(Qt6_FOUND)
+
 find_package(qblock 0 QUIET )
 if(NOT qblock_FOUND AND NOT TARGET qblock)
 FetchContent_Declare(
@@ -54,7 +68,6 @@ endif(NOT qpow_FOUND AND NOT TARGET qpow)
 target_link_libraries(qclient PUBLIC qblock)
 target_link_libraries(qclient PRIVATE qpow)
 
-target_link_libraries(qclient PUBLIC  Qt6::Core Qt6::Network)
 
 target_include_directories(qclient PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	"$<INSTALL_INTERFACE:include>")
@@ -101,3 +114,7 @@ endif()
 #if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
 #    add_subdirectory(tests)
 #endif()
+if(BUILD_DOCS)
+	get_target_property(build_docs cmake_build_docs SOURCES)
+	include(${build_docs})
+endif()
