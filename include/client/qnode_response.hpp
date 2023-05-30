@@ -10,7 +10,6 @@ class Response: public QObject
     Q_OBJECT
 public:
     Response(QNetworkReply *thereply);
-public slots:
     void fill();
     void error_found(QNetworkReply::NetworkError code);
 signals:
