@@ -17,6 +17,8 @@ jobs:
         useThread: [true,false]
 
     uses: EddyTheCo/Common/.github/workflows/build-test-install.yml@main
+    permissions:
+      contents: write
     with:
       os: ${{ matrix.os }}
       sharedLib: ${{ matrix.sharedLib }}
