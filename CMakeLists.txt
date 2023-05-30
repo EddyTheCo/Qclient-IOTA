@@ -42,6 +42,7 @@ add_library(qclient qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qn
 	)
 
 
+target_compile_definitions(qclient PRIVATE MYSHAREDLIB_LIBRARY)
 if (Qt6_FOUND)
 	target_link_libraries(qclient PUBLIC  Qt6::Core Qt6::Network)
 endif(Qt6_FOUND)
