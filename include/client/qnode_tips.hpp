@@ -6,20 +6,20 @@
 namespace qiota{
 
 
-class Node_tips : public QObject
-{
-    Q_OBJECT
-public:
-    Node_tips(Response*);
-    std::vector<qblocks::Block_ID> tips;
-public slots:
-    void fill(QJsonValue data);
-signals:
-    void finished(void);
+	class MYSHAREDLIB_EXPORT Node_tips : public QObject
+	{
+		Q_OBJECT
+		public:
+			Node_tips(Response*);
+			std::vector<qblocks::Block_ID> tips;
+			public slots:
+				void fill(QJsonValue data);
+		signals:
+			void finished(void);
 
-private:
-    Response* response_;
+		private:
+			Response* response_;
 
-};
+	};
 
 };

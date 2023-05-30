@@ -2,10 +2,17 @@
 
 #include <QNetworkReply>
 #include <QJsonValue>
+#include <QtCore/QtGlobal>
+
+#if defined(MYSHAREDLIB_LIBRARY)
+# define MYSHAREDLIB_EXPORT Q_DECL_EXPORT
+#else
+#define MYSHAREDLIB_EXPORT Q_DECL_IMPORT
+#endif
 namespace qiota{
 
 
-class Response: public QObject
+class MYSHAREDLIB_EXPORT Response: public QObject
 {
     Q_OBJECT
 public:

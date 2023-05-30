@@ -6,7 +6,7 @@
 namespace qiota{
 
 
-	class Node_block : public QObject
+	class MYSHAREDLIB_EXPORT Node_block : public QObject
 	{
 		Q_OBJECT
 		public:

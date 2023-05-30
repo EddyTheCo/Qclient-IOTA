@@ -16,7 +16,7 @@
 
 namespace qiota{
 
-	class Client: public QObject
+	class MYSHAREDLIB_EXPORT Client: public QObject
 	{
 
 		Q_OBJECT
