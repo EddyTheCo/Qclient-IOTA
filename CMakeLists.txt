@@ -55,7 +55,7 @@ if(NOT qblock_FOUND AND NOT TARGET qblock)
 		)
 	FetchContent_MakeAvailable(qblock)
 endif(NOT qblock_FOUND AND NOT TARGET qblock)
-find_package(qblock 0 QUIET )
+find_package(qpow 0 QUIET )
 if(NOT qpow_FOUND AND NOT TARGET qpow)
 	FetchContent_Declare(
 		qpow
