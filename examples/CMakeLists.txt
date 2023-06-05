@@ -42,7 +42,7 @@ foreach(example "full_block_with_tagged_data_payload"
 	if (Qt6_FOUND)
 		qt_add_executable( ${example}  ${example}.cpp)
 
-		target_link_libraries(${example} PRIVATE qclient qaddr_bundle qslip10 qed25519)
+		target_link_libraries(${example} PUBLIC qclient qaddr_bundle qslip10 qed25519)
 		if (WIN32 AND BUILD_SHARED_LIBS)
 			add_custom_command(
 				TARGET ${example} POST_BUILD
