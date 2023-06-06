@@ -51,7 +51,7 @@ if(NOT qblock_FOUND AND NOT TARGET qblock)
 	FetchContent_Declare(
 		qblock
 		GIT_REPOSITORY https://github.com/EddyTheCo/Qblock-IOTA.git
-		GIT_TAG testing
+		GIT_TAG v0.1.1
 		)
 	FetchContent_MakeAvailable(qblock)
 endif(NOT qblock_FOUND AND NOT TARGET qblock)
@@ -60,7 +60,7 @@ if(NOT qpow_FOUND AND NOT TARGET qpow)
 	FetchContent_Declare(
 		qpow
 		GIT_REPOSITORY https://github.com/EddyTheCo/Qpow-IOTA.git
-		GIT_TAG testing
+		GIT_TAG v0.1.1
 		)
 	FetchContent_MakeAvailable(qpow)
 endif(NOT qpow_FOUND AND NOT TARGET qpow)
