@@ -37,7 +37,7 @@ private:
     qblocks::Output_Metadata_Response metadata_;
 };
 
-class Node_outputs : public QObject
+class SHAREDLIB_EXPORT Node_outputs : public QObject
 {
     Q_OBJECT
 public:
