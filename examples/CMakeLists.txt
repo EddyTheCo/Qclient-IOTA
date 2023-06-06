@@ -55,8 +55,10 @@ foreach(example "full_block_with_tagged_data_payload"
 endforeach()
 
 add_custom_command(
-	OUTPUT FBTD.out
-	COMMAND full_block_with_tagged_data_payload https://api.testnet.shimmer.network
-	COMMENT "Testing executables"
+	TARGET full_block_with_tagged_data_payload
+	POST_BUILD
+	COMMAND full_block_with_tagged_data_payload
+	ARGS https://api.testnet.shimmer.network
 	VERBATIM
 	)
+
