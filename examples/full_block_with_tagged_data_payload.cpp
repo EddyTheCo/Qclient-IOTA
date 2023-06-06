@@ -1,7 +1,7 @@
 #include"client/qclient.hpp"
 
 #include <QCoreApplication>
-
+#include <QTimer>
 
 
 using namespace qiota::qblocks;
@@ -26,5 +26,11 @@ int main(int argc, char** argv)
 
     iota_client->send_block(block_);
 
+    QObject::connect(iota_client,&Client::last_blockid,&a,[&a](const c_array bid )
+    {
+        qDebug()<<"blockid:"<<bid.toHexString();
+        a.quit();
+    });
+    QTimer::singleShot(10000, &a, QCoreApplication::quit);
     return a.exec();
 }
