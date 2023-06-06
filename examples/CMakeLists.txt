@@ -53,3 +53,10 @@ foreach(example "full_block_with_tagged_data_payload"
 	endif(Qt6_FOUND)
 
 endforeach()
+
+add_custom_command(
+	OUTPUT FBTD.out
+	COMMAND full_block_with_tagged_data_payload https://api.testnet.shimmer.network
+	COMMENT "Testing executables"
+	VERBATIM
+	)
