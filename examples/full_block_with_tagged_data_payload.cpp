@@ -31,6 +31,6 @@ int main(int argc, char** argv)
         qDebug()<<"blockid:"<<bid.toHexString();
         a.quit();
     });
-    QTimer::singleShot(10000, &a, QCoreApplication::quit);
+    QTimer::singleShot(30000, &a, QCoreApplication::quit);
     return a.exec();
 }

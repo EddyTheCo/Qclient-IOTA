@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     {
         iota_client->set_jwt(QString(argv[3]));
     }
-
+    //Print the block id after s
     QObject::connect(iota_client,&Client::last_blockid,a,[=](const c_array bid )
     {
         qDebug()<<"blockid:"<<bid.toHexString();
