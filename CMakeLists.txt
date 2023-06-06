@@ -51,7 +51,7 @@ if(NOT qblock_FOUND AND NOT TARGET qblock)
 	FetchContent_Declare(
 		qblock
 		GIT_REPOSITORY https://github.com/EddyTheCo/Qblock-IOTA.git
-		GIT_TAG v0.0.1
+		GIT_TAG testing
 		)
 	FetchContent_MakeAvailable(qblock)
 endif(NOT qblock_FOUND AND NOT TARGET qblock)
