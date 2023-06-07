@@ -50,13 +50,13 @@ foreach(example "full_block_with_tagged_data_payload"
 				COMMAND_EXPAND_LISTS
 				)
 		endif ()
-                add_custom_command(
-                        TARGET  ${example}
-                        POST_BUILD
-                        COMMAND  ${example}
-                        ARGS https://api.testnet.shimmer.network ef4593558d0c3ed9e3f7a2de766d33093cd72372c800fa47ab5765c43ca006b5
-                        VERBATIM
-                        )
+                #add_custom_command(
+                #        TARGET  ${example}
+                #        POST_BUILD
+                #        COMMAND  ${example}
+                #        ARGS https://api.testnet.shimmer.network ef4593558d0c3ed9e3f7a2de766d33093cd72372c800fa47ab5765c43ca006b5
+                #        VERBATIM
+                #        )
 	endif(Qt6_FOUND)
 
 endforeach()
