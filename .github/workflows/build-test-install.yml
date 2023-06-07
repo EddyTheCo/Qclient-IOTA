@@ -6,13 +6,12 @@ on:
     tags:
       - 'v*'
   pull_request:
-    types: [opened,reopened,edited,synchronize]
     branches: [develop]
 jobs:
   build_test_package:
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [ubuntu-latest,macos-latest,windows-latest] 
         sharedLib: [true,false]
         useThread: [true,false]
 
