@@ -6,7 +6,7 @@
 namespace qiota{
 
 
-	class Node_block : public QObject
+	class QCLIENT_EXPORT Node_block : public QObject
 	{
 		Q_OBJECT
 		public:
@@ -22,7 +22,7 @@ namespace qiota{
 			void set_nonce(const quint64& nonce_m);
 
 
-signals:
+		signals:
 			void finished(void);
 
 		private:
