@@ -60,12 +60,13 @@ if(NOT qpow_FOUND AND NOT TARGET qpow)
 	FetchContent_Declare(
 		qpow
 		GIT_REPOSITORY https://github.com/EddyTheCo/Qpow-IOTA.git
-		GIT_TAG do_not_export
+		GIT_TAG v0.1.1
 		)
 	FetchContent_MakeAvailable(qpow)
 endif(NOT qpow_FOUND AND NOT TARGET qpow)
 
-target_link_libraries(qclient PUBLIC qblock qpow)
+target_link_libraries(qclient PUBLIC qblock)
+target_link_libraries(qclient PUBLIC qpow)
 
 target_include_directories(qclient PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	"$<INSTALL_INTERFACE:include>")
