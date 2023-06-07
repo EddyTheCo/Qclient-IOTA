@@ -41,7 +41,7 @@ add_library(qclient qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qn
 	include/client/qnode_outputs.hpp
 	)
 
-target_compile_definitions(qclient PRIVATE WINDOWS_SHAREDLIB)
+target_compile_definitions(qclient PRIVATE WINDOWS_QCLIENT)
 if (Qt6_FOUND)
 	target_link_libraries(qclient PUBLIC  Qt6::Core Qt6::Network)
 endif(Qt6_FOUND)
@@ -51,7 +51,7 @@ if(NOT qblock_FOUND AND NOT TARGET qblock)
 	FetchContent_Declare(
 		qblock
 		GIT_REPOSITORY https://github.com/EddyTheCo/Qblock-IOTA.git
-		GIT_TAG v0.1.1
+		GIT_TAG v0.1.2
 		)
 	FetchContent_MakeAvailable(qblock)
 endif(NOT qblock_FOUND AND NOT TARGET qblock)
@@ -60,7 +60,7 @@ if(NOT qpow_FOUND AND NOT TARGET qpow)
 	FetchContent_Declare(
 		qpow
 		GIT_REPOSITORY https://github.com/EddyTheCo/Qpow-IOTA.git
-		GIT_TAG testing
+		GIT_TAG v0.1.2
 		)
 	FetchContent_MakeAvailable(qpow)
 endif(NOT qpow_FOUND AND NOT TARGET qpow)

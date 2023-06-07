@@ -4,16 +4,16 @@
 #include <QJsonValue>
 #include <QtCore/QtGlobal>
 
-#if defined(WINDOWS_SHAREDLIB)
-# define SHAREDLIB_EXPORT Q_DECL_EXPORT
+#if defined(WINDOWS_QCLIENT)
+# define QCLIENT_EXPORT Q_DECL_EXPORT
 #else
-#define SHAREDLIB_EXPORT Q_DECL_IMPORT
+#define QCLIENT_EXPORT Q_DECL_IMPORT
 #endif
 
 namespace qiota{
 
 
-	class SHAREDLIB_EXPORT Response: public QObject
+	class QCLIENT_EXPORT Response: public QObject
 	{
 		Q_OBJECT
 		public:
