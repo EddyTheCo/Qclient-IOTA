@@ -6,7 +6,7 @@ on:
     tags:
       - 'v*'
   pull_request:
-    types: [opened,reopened]
+    types: [opened,reopened,edited]
     branches: [develop]
 jobs:
   build_test_package:
