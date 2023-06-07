@@ -104,8 +104,8 @@ void Client::send_block(const qblocks::Block& block_)
                     nfinder_->deleteLater();
                 });
                 connect(nfinder_,&qpow::nonceFinder::nonce_not_found,this,[=](){
-                    node_block_->deleteLater();
                     nfinder_->deleteLater();
+                    node_block_->deleteLater();                    
                     send_block(block_);
                 });
                 nfinder_->set_Min_Pow_Score(info_->min_pow_score);
