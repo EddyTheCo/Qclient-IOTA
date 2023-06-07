@@ -16,7 +16,7 @@
 
 namespace qiota{
 
-	class Client: public QObject
+	class QCLIENT_EXPORT Client: public QObject
 	{
 
 		Q_OBJECT
@@ -62,7 +62,7 @@ namespace qiota{
 			QJsonObject info()const{return info_;}
 
 
-signals:
+		signals:
 			void last_blockid(qblocks::c_array id)const;
 			void stateChanged();
 

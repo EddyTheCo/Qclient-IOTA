@@ -42,7 +42,24 @@ foreach(example "full_block_with_tagged_data_payload"
 	if (Qt6_FOUND)
 		qt_add_executable( ${example}  ${example}.cpp)
 
-		target_link_libraries(${example} PRIVATE qclient qaddr_bundle qslip10 qed25519)
+		target_link_libraries(${example} PUBLIC qclient qaddr_bundle qslip10 qed25519)
+		if (WIN32 AND BUILD_SHARED_LIBS)
+			add_custom_command(
+				TARGET ${example} POST_BUILD
+				COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:${example}> $<TARGET_FILE_DIR:${example}>
+				COMMAND_EXPAND_LISTS
+				)
+		endif ()
+                #add_custom_command(
+                #        TARGET  ${example}
+                #        POST_BUILD
+                #        COMMAND  ${example}
+                #        ARGS https://api.testnet.shimmer.network ef4593558d0c3ed9e3f7a2de766d33093cd72372c800fa47ab5765c43ca006b5
+                #        VERBATIM
+                #        )
 	endif(Qt6_FOUND)
 
 endforeach()
+
+
+

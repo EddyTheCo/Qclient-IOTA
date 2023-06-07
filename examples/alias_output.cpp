@@ -5,7 +5,7 @@
 
 
 #include <QCoreApplication>
-
+#include<QTimer>
 
 
 using namespace qiota::qblocks;
@@ -19,6 +19,14 @@ int main(int argc, char** argv)
 
     auto iota_client=new Client();
     iota_client->set_node_address(QUrl(argv[1]));
+    //Print the block id after sent and close
+    QObject::connect(iota_client,&Client::last_blockid,a,[=](const c_array bid )
+    {
+        qDebug()<<"blockid:"<<bid.toHexString();
+        a->quit();
+    });
+    //Close the application after 30 secs
+    QTimer::singleShot(30000, a, QCoreApplication::quit);
     //https://api.testnet.shimmer.network
     //ef4593558d0c3ed9e3f7a2de766d33093cd72372c800fa47ab5765c43ca006b5
     auto seed=QByteArray::fromHex(argv[2]);

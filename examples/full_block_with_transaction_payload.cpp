@@ -6,7 +6,7 @@
 #include <QCoreApplication>
 
 #include<QJsonDocument>
-
+#include<QTimer>
 
 
 using namespace qiota::qblocks;
@@ -28,8 +28,14 @@ int main(int argc, char** argv)
     {
         iota_client->set_jwt(QString(argv[3]));
     }
-
-
+    //Print the block id after sent and close
+    QObject::connect(iota_client,&Client::last_blockid,a,[=](const c_array bid )
+    {
+        qDebug()<<"blockid:"<<bid.toHexString();
+        a->quit();
+    });
+    //Close the application after 30 secs
+    QTimer::singleShot(30000, a, QCoreApplication::quit);
     QVector<quint32> path={44,4219,0,0,0};
     auto MK=Master_key(seed);
     auto keys=MK.slip10_key_from_path(path);
@@ -72,6 +78,7 @@ int main(int argc, char** argv)
 
                 auto block_=Block(trpay);
                 iota_client->send_block(block_);
+
 
             }
             info->deleteLater();
