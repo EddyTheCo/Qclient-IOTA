@@ -15,7 +15,7 @@ jobs:
         sharedLib: [true,false]
         useThread: [true,false]
 
-    uses: EddyTheCo/Common/.github/workflows/build-test-install.yml@main
+    uses: EddyTheCo/Common/.github/workflows/build-test-install.yml@testing
     permissions:
       contents: write
     with:
