@@ -5,7 +5,7 @@ include(FetchContent)
 FetchContent_Declare(
 	ccommon
 	GIT_REPOSITORY https://github.com/EddyTheCo/Common.git
-	GIT_TAG main
+	GIT_TAG testing
 	)
 FetchContent_MakeAvailable(ccommon)
 version_from_git(
