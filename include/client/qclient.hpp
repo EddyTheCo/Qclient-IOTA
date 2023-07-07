@@ -93,4 +93,4 @@ namespace qiota{
 			QJsonObject info_;
 	};
 
-};
+}

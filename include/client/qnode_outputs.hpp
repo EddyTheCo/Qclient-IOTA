@@ -31,7 +31,7 @@ namespace qiota{
 						break;
 				}
 				return var;
-			};
+            }
 		private:
 			std::shared_ptr<qblocks::Output> out_;
 			qblocks::Output_Metadata_Response metadata_;
@@ -47,11 +47,11 @@ namespace qiota{
 
 			public slots:
 				void fill(QJsonValue data);
-			void fill(){emit finished();};
+            void fill(){emit finished();}
 		signals:
 			void finished();
 
 
 	};
 
-};
+}

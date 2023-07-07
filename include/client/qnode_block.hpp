@@ -11,7 +11,7 @@ namespace qiota{
 		Q_OBJECT
 		public:
 			Node_block(Response*);
-			Node_block(const qblocks::Block &block_m):block_(block_m){};
+            Node_block(const qblocks::Block &block_m):block_(block_m){}
 			qblocks::Block block_;
 			qblocks::c_array ready(void)const;
 
@@ -29,4 +29,4 @@ namespace qiota{
 			Response* response_;
 	};
 
-};
+}
