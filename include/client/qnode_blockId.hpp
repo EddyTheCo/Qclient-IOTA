@@ -10,7 +10,7 @@ namespace qiota{
 	{
 		Q_OBJECT
 		public:
-			Node_blockID(){};
+            Node_blockID(){}
 			Node_blockID(Response*);
 			qblocks::Block_ID id;
 			public slots:
@@ -22,4 +22,4 @@ namespace qiota{
 			Response* response_;
 	};
 
-};
+}
