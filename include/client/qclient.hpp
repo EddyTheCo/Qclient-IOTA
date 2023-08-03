@@ -68,7 +68,7 @@ namespace qiota{
 
 		private:
 			void set_State(ClientState state_m){if(state_m!=state_){state_=state_m;emit stateChanged();}}
-			Response*  get_reply_rest(const QString& path, const QString &query="")const;
+            Response*  get_reply_rest(const QString& path, const QString &query=QString())const;
 			Response*  post_reply_rest(const QString& path, const QJsonObject& payload )const;
 
 
