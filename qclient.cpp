@@ -35,7 +35,7 @@ Response*  Client::get_reply_rest(const QString& path,const QString& query)const
 {
     QUrl InfoUrl=rest_node_address_;
     InfoUrl.setPath(path);
-    InfoUrl.setQuery(query);
+    if(!query.isNull())InfoUrl.setQuery(query);
     auto request=QNetworkRequest(InfoUrl);
     request.setAttribute(QNetworkRequest::UseCredentialsAttribute,false);
     if(!JWT.isNull())request.setRawHeader(QByteArray("Authorization"),
