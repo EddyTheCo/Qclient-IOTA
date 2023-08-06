@@ -29,6 +29,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+include(GNUInstallDirs)
 
 find_package(Qt6 COMPONENTS Core Network)
 
@@ -71,18 +72,18 @@ target_link_libraries(qclient PRIVATE qpow)
 target_include_directories(qclient PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     "$<INSTALL_INTERFACE:include>")
 
-install(TARGETS qclient EXPORT qclientTargets DESTINATION lib)
-install(DIRECTORY include/ DESTINATION include/)
+install(TARGETS qclient EXPORT qclientTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(EXPORT qclientTargets
     FILE qclientTargets.cmake
-    DESTINATION lib/cmake/qclient
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/qclient
 )
 include(CMakePackageConfigHelpers)
 # generate the config file that is includes the exports
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/qclientConfig.cmake"
-    INSTALL_DESTINATION "lib/cmake/qclient"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/qclient"
     NO_SET_AND_CHECK_MACRO
     NO_CHECK_REQUIRED_COMPONENTS_MACRO
 )
@@ -94,7 +95,7 @@ write_basic_package_version_file(
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/qclientConfig.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/qclientConfigVersion.cmake
-    DESTINATION lib/cmake/qclient
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/qclient
 )
 export(EXPORT qclientTargets
     FILE "${CMAKE_CURRENT_BINARY_DIR}/qclientTargets.cmake"
