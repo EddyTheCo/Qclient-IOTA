@@ -27,12 +27,11 @@ void Node_block::set_pv(const quint8& pv){
 void Node_block::set_parents(const std::vector<qblocks::Block_ID>& parents_m)
 {
     block_.set_parents(parents_m);
-    qDebug().noquote()<<"block_.set_parents:\n"<<QString(QJsonDocument(block_.get_Json()).toJson(QJsonDocument::Indented));
 }
 void Node_block::Node_block::set_nonce(const quint64& nonce_m){
 
     block_.set_nonce(nonce_m);
-    qDebug().noquote()<<"block_.set_nonce:\n"<<QString(QJsonDocument(block_.get_Json()).toJson(QJsonDocument::Indented));
+    qDebug().noquote()<<"block:\n"<<QString(QJsonDocument(block_.get_Json()).toJson(QJsonDocument::Indented));
     emit finished();
 };
 }
