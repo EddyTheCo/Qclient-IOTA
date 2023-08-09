@@ -51,7 +51,7 @@ endif(Qt6_FOUND)
 FetchContent_Declare(
     qblock
     GIT_REPOSITORY https://github.com/EddyTheCo/Qblock-IOTA.git
-    GIT_TAG v0.1.2
+    GIT_TAG v0.2.1
     FIND_PACKAGE_ARGS 0 CONFIG
 )
 FetchContent_MakeAvailable(qblock)
