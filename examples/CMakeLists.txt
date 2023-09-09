@@ -1,33 +1,25 @@
-include(FetchContent)
-find_package(qaddr_bundle 0 QUIET )
-if(NOT qaddr_bundle_FOUND AND NOT TARGET qaddr_bundle)
-	FetchContent_Declare(
-		qaddr_bundle
-		GIT_REPOSITORY https://github.com/EddyTheCo/QAddrBundle.git
-		GIT_TAG v0.0.1
-		)
-	FetchContent_MakeAvailable(qaddr_bundle)
-endif(NOT qaddr_bundle_FOUND AND NOT TARGET qaddr_bundle)
+FetchContent_Declare(
+	qaddr_bundle
+	GIT_REPOSITORY https://github.com/EddyTheCo/QAddrBundle.git
+	GIT_TAG v0.2.2
+	FIND_PACKAGE_ARGS 0.2 CONFIG
+	)
+FetchContent_MakeAvailable(qaddr_bundle)
+FetchContent_Declare(
+	qslip10
+	GIT_REPOSITORY https://github.com/EddyTheCo/Qslip10.git
+	GIT_TAG v0.0.2
+	FIND_PACKAGE_ARGS 0.0 CONFIG
+	)
+FetchContent_MakeAvailable(qslip10)
 
-find_package(qslip10 0 QUIET )
-if(NOT qslip10_FOUND AND NOT TARGET qslip10)
-	FetchContent_Declare(
-		qslip10
-		GIT_REPOSITORY https://github.com/EddyTheCo/Qslip10.git
-		GIT_TAG v0.0.1
-		)
-	FetchContent_MakeAvailable(qslip10)
-endif(NOT qslip10_FOUND AND NOT TARGET qslip10)
-
-find_package(qed25519 0 QUIET )
-if(NOT qed25519_FOUND AND NOT TARGET qed25519)
-	FetchContent_Declare(
-		qed25519
-		GIT_REPOSITORY https://github.com/EddyTheCo/Qed25519.git
-		GIT_TAG v0.0.1
-		)
-	FetchContent_MakeAvailable(qed25519)
-endif(NOT qed25519_FOUND AND NOT TARGET qed25519)
+FetchContent_Declare(
+	qed25519
+	GIT_REPOSITORY https://github.com/EddyTheCo/Qed25519.git
+	GIT_TAG v0.0.2
+	FIND_PACKAGE_ARGS 0.0 CONFIG
+	)
+FetchContent_MakeAvailable(qed25519)
 
 
 foreach(example "full_block_with_tagged_data_payload"
@@ -50,13 +42,6 @@ foreach(example "full_block_with_tagged_data_payload"
 				COMMAND_EXPAND_LISTS
 				)
 		endif ()
-                #add_custom_command(
-                #        TARGET  ${example}
-                #        POST_BUILD
-                #        COMMAND  ${example}
-                #        ARGS https://api.testnet.shimmer.network ef4593558d0c3ed9e3f7a2de766d33093cd72372c800fa47ab5765c43ca006b5
-                #        VERBATIM
-                #        )
 	endif(Qt6_FOUND)
 
 endforeach()
