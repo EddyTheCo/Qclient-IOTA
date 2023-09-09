@@ -37,7 +37,9 @@ if (Qt6_FOUND)
     qt_standard_project_setup()
 endif(Qt6_FOUND)
 
-add_library(qclient qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qnode_tips.cpp src/qnode_blockId.cpp src/qnode_block.cpp src/qnode_outputs.cpp )
+add_library(qclient qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qnode_tips.cpp src/qnode_blockId.cpp src/qnode_block.cpp src/qnode_outputs.cpp
+    include/client/qnode_response.hpp include/client/qnode_info.hpp include/client/qnode_tips.hpp include/client/qclient.hpp include/client/qnode_blockId.hpp include/client/qnode_block.hpp
+       include/client/qnode_outputs.hpp)
 
 target_compile_definitions(qclient PRIVATE WINDOWS_QCLIENT)
 if (Qt6_FOUND)
