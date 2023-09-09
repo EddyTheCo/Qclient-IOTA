@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
 include(local_conf.cmake OPTIONAL)
 
 include(FetchContent)
@@ -39,8 +39,7 @@ endif(Qt6_FOUND)
 
 add_library(qclient qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qnode_tips.cpp src/qnode_blockId.cpp src/qnode_block.cpp src/qnode_outputs.cpp
     include/client/qnode_response.hpp include/client/qnode_info.hpp include/client/qnode_tips.hpp include/client/qclient.hpp include/client/qnode_blockId.hpp include/client/qnode_block.hpp
-    include/client/qnode_outputs.hpp
-)
+       include/client/qnode_outputs.hpp)
 
 target_compile_definitions(qclient PRIVATE WINDOWS_QCLIENT)
 if (Qt6_FOUND)
@@ -51,8 +50,8 @@ endif(Qt6_FOUND)
 FetchContent_Declare(
     qblock
     GIT_REPOSITORY https://github.com/EddyTheCo/Qblock-IOTA.git
-    GIT_TAG v0.2.2
-    FIND_PACKAGE_ARGS 0 CONFIG
+    GIT_TAG v0.3.1
+    FIND_PACKAGE_ARGS 0.3 CONFIG
 )
 FetchContent_MakeAvailable(qblock)
 
@@ -60,8 +59,8 @@ FetchContent_MakeAvailable(qblock)
 FetchContent_Declare(
     qpow
     GIT_REPOSITORY https://github.com/EddyTheCo/Qpow-IOTA.git
-    GIT_TAG v0.1.2
-    FIND_PACKAGE_ARGS 0 CONFIG
+    GIT_TAG v0.2.1
+    FIND_PACKAGE_ARGS 0.2 CONFIG
 )
 FetchContent_MakeAvailable(qpow)
 
@@ -73,7 +72,7 @@ target_include_directories(qclient PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOU
     "$<INSTALL_INTERFACE:include>")
 
 install(TARGETS qclient EXPORT qclientTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(EXPORT qclientTargets
     FILE qclientTargets.cmake
@@ -84,8 +83,6 @@ include(CMakePackageConfigHelpers)
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/qclientConfig.cmake"
     INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/qclient"
-    NO_SET_AND_CHECK_MACRO
-    NO_CHECK_REQUIRED_COMPONENTS_MACRO
 )
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/qclientConfigVersion.cmake"
@@ -103,6 +100,7 @@ export(EXPORT qclientTargets
 
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    set(CPACK_PACKAGE_CONTACT "estervtech")	
     include(CTest)
     set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-v${SEMVER}-${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_VERSION}-${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_CXX_COMPILER_ID}")
     if(NOT BUILD_SHARED_LIBS)
