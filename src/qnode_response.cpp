@@ -3,7 +3,7 @@
 #include<QJsonObject>
 namespace qiota{
 
-Response::Response(QNetworkReply *thereply):reply(thereply)
+Response::Response(QNetworkReply *thereply,QObject *parent):QObject(parent),reply(thereply)
 {
     QObject::connect(reply, &QNetworkReply::finished,this, &Response::fill);
     QObject::connect(reply, &QNetworkReply::errorOccurred,this, &Response::error_found);
@@ -30,6 +30,7 @@ void Response::error_found(QNetworkReply::NetworkError code)
     qDebug()<<"Error:"<<errorreply;
     qDebug()<<"code:"<<code;
     qDebug()<<"errorfound"<<reply->readAll();
+    reply->deleteLater();
 }
 
 
