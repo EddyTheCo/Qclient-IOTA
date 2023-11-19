@@ -20,7 +20,7 @@ void Client::set_node_address(const QUrl node_address_m)
         set_State(Disconnected);
         rest_node_address_=node_address_m;
         auto info=get_api_core_v2_info();
-        QObject::connect(info,&Node_info::finished,this,[=]( ){
+        connect(info,&Node_info::finished,this,[=, this]( ){
 
             if(info->isHealthy)
             {
@@ -58,7 +58,7 @@ Node_info* Client::get_api_core_v2_info(void)
 {
     auto resp=get_reply_rest("/api/core/v2/info");
 
-    connect(resp, &Response::returned,this,[=]( QJsonValue data ){
+    connect(resp, &Response::returned,this,[=,this]( QJsonValue data ){
         info_=data.toObject();
     });
 
@@ -80,19 +80,19 @@ Node_block* Client::get_api_core_v2_blocks_blockId(const QString& blockId)
 void Client::send_block(const qblocks::Block& block_)
 {
     auto node_block_=new Node_block(block_);
-    connect(node_block_,&Node_block::finished,this,[=](){
+    connect(node_block_,&Node_block::finished,this,[=,this](){
         auto blockid_=Client::post_api_core_v2_blocks(node_block_->block_.get_Json());
         node_block_->deleteLater();
-        QObject::connect(blockid_,&Node_blockID::finished,this,[=](){
+        connect(blockid_,&Node_blockID::finished,this,[=,this](){
             emit last_blockid(blockid_->id);
             blockid_->deleteLater();
         });
     });
     auto info_=get_api_core_v2_info();
-    connect(info_,&Node_info::finished,this,[=](){
+    connect(info_,&Node_info::finished,this,[=,this](){
         node_block_->set_pv(info_->protocol_version);
         auto tips_=get_api_core_v2_tips();
-        connect(tips_,&Node_tips::finished,this,[=](){
+        connect(tips_,&Node_tips::finished,this,[=,this](){
             node_block_->set_parents(tips_->tips);
             if(info_->min_pow_score&&!(info_->pow_feature))
             {
@@ -103,7 +103,7 @@ void Client::send_block(const qblocks::Block& block_)
                     node_block_->set_nonce(nonce);
                     nfinder_->deleteLater();
                 });
-                connect(nfinder_,&qpow::nonceFinder::nonce_not_found,this,[=](){
+                connect(nfinder_,&qpow::nonceFinder::nonce_not_found,this,[=,this](){
                     nfinder_->deleteLater();
                     node_block_->deleteLater();                    
                     send_block(block_);

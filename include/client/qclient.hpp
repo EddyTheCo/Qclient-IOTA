@@ -28,7 +28,7 @@ namespace qiota{
 				void get_outputs(Node_outputs* node_outs_,const QString& filter)
 				{
 					auto outputids=get_api_indexer_v1_outputs<outtype>(filter);
-					QObject::connect(outputids,&Response::returned,node_outs_,[=](QJsonValue data ){
+                    connect(outputids,&Response::returned,node_outs_,[=,this](QJsonValue data ){
 							auto transid=data["items"].toArray();
 							node_outs_->size_+=transid.size();
 							outputids->deleteLater();
@@ -86,7 +86,7 @@ signals:
 			QNetworkAccessManager* nam;
 			QString JWT;
 			ClientState state_;
-			QJsonObject info_;
+		        QJsonObject info_;
 	};
 
 }
