@@ -1,8 +1,4 @@
 #pragma once
-/**
- *  https://github.com/iotaledger/tips/blob/main/tips/TIP-0025/tip-0025.md
- *
- **/
 #include"block/qblock.hpp"
 #include"client/qnode_response.hpp"
 #include"client/qnode_info.hpp"
@@ -29,7 +25,7 @@ namespace qiota{
 			void send_block(const qblocks::Block& block_);
 
 			template<qblocks::Output::types outtype>
-				void get_outputs(Node_outputs* node_outs_,const QString& filter)const
+				void get_outputs(Node_outputs* node_outs_,const QString& filter)
 				{
 					auto outputids=get_api_indexer_v1_outputs<outtype>(filter);
 					QObject::connect(outputids,&Response::returned,node_outs_,[=](QJsonValue data ){
@@ -62,25 +58,25 @@ namespace qiota{
 			QJsonObject info()const{return info_;}
 
 
-		signals:
-			void last_blockid(qblocks::c_array id)const;
+signals:
+			void last_blockid(qblocks::c_array id);
 			void stateChanged();
 
 		private:
 			void set_State(ClientState state_m){if(state_m!=state_){state_=state_m;emit stateChanged();}}
-            Response*  get_reply_rest(const QString& path, const QString &query=QString())const;
+			Response*  get_reply_rest(const QString& path, const QString &query=QString());
 			Response*  post_reply_rest(const QString& path, const QJsonObject& payload )const;
 
 
-			Node_tips* get_api_core_v2_tips(void)const;
+			Node_tips* get_api_core_v2_tips(void);
 			Node_blockID* post_api_core_v2_blocks(const QJsonObject& block_)const;
-			Node_block* get_api_core_v2_blocks_blockId(const QString& blockId)const;
-			Response* get_api_core_v2_blocks_blockId_metadata(const QString& blockId)const;
+			Node_block* get_api_core_v2_blocks_blockId(const QString& blockId);
+			Response* get_api_core_v2_blocks_blockId_metadata(const QString& blockId);
 
-			Response* get_api_core_v2_outputs_outputId(const QString& outputId)const;
-			Response* get_api_core_v2_outputs_outputId_metadata(const QString& outputId)const;
+			Response* get_api_core_v2_outputs_outputId(const QString& outputId);
+			Response* get_api_core_v2_outputs_outputId_metadata(const QString& outputId);
 			template<qblocks::Output::types outtype>
-				Response* get_api_indexer_v1_outputs(const QString& filter)const
+				Response* get_api_indexer_v1_outputs(const QString& filter)
 				{
 					return get_reply_rest("/api/indexer/v1/outputs/"+qblocks::Output::typesstr[outtype],filter);
 				}
