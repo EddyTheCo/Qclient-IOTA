@@ -12,19 +12,19 @@ Client::Client(QObject *parent):QObject(parent),
         qDebug()<<id.toHexString();
     });
 };
-void Client::set_node_address(const QUrl node_address_m)
+void Client::setNodeAddress(const QUrl& nodeAddress)
 {
 
-    if((node_address_m!=rest_node_address_||state_!=Connected)&&node_address_m.isValid())
+    if((m_nodeAddress!=nodeAddress||m_state!=Connected)&&nodeAddress.isValid())
     {
-        set_State(Disconnected);
-        rest_node_address_=node_address_m;
+        setState(Disconnected);
+        m_nodeAddress=nodeAddress;
         auto info=get_api_core_v2_info();
         connect(info,&Node_info::finished,this,[=, this]( ){
 
             if(info->isHealthy)
             {
-                set_State(Connected);
+                setState(Connected);
             }
             info->deleteLater();
         });
@@ -33,7 +33,7 @@ void Client::set_node_address(const QUrl node_address_m)
 
 Response*  Client::get_reply_rest(const QString& path,const QString& query)
 {
-    QUrl InfoUrl=rest_node_address_;
+    QUrl InfoUrl=m_nodeAddress;
     InfoUrl.setPath(path);
     if(!query.isNull())InfoUrl.setQuery(query);
     auto request=QNetworkRequest(InfoUrl);
@@ -43,32 +43,26 @@ Response*  Client::get_reply_rest(const QString& path,const QString& query)
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     return new Response(nam->get(request),this);
 }
-Response*  Client::post_reply_rest(const QString& path, const QJsonObject& payload)const
+Response*  Client::post_reply_rest(const QString& path, const QJsonObject& payload)
 {
-    QUrl InfoUrl=rest_node_address_;
+    QUrl InfoUrl=m_nodeAddress;
     InfoUrl.setPath(path);
     auto request=QNetworkRequest(InfoUrl);
     request.setAttribute(QNetworkRequest::UseCredentialsAttribute,false);
     if(!JWT.isNull())request.setRawHeader(QByteArray("Authorization"),
                                           QByteArray("Bearer ").append(JWT.toUtf8()));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    return new Response(nam->post(request,QJsonDocument(payload).toJson()));
+    return new Response(nam->post(request,QJsonDocument(payload).toJson()),this);
 }
 Node_info* Client::get_api_core_v2_info(void)
 {
-    auto resp=get_reply_rest("/api/core/v2/info");
-
-    connect(resp, &Response::returned,this,[=,this]( QJsonValue data ){
-        info_=data.toObject();
-    });
-
-    return new Node_info(resp);
+    return new Node_info(get_reply_rest("/api/core/v2/info"));
 }
 Node_tips* Client::get_api_core_v2_tips()
 {
     return new Node_tips(get_reply_rest("/api/core/v2/tips"));
 }
-Node_blockID *Client::post_api_core_v2_blocks(const QJsonObject& block_)const
+Node_blockID *Client::post_api_core_v2_blocks(const QJsonObject& block_)
 {
     return new Node_blockID(post_reply_rest("/api/core/v2/blocks",block_));
 }
@@ -76,7 +70,17 @@ Node_block* Client::get_api_core_v2_blocks_blockId(const QString& blockId)
 {
     return new Node_block(get_reply_rest("/api/core/v2/blocks/"+blockId));
 }
-
+void Client::getFundsFromFaucet(const QString& bech32Address, const QUrl & faucetAddress)
+{    
+    QUrl InfoUrl=faucetAddress;
+    InfoUrl.setPath("/api/enqueue");
+    auto request=QNetworkRequest(InfoUrl);
+    request.setAttribute(QNetworkRequest::UseCredentialsAttribute,false);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    const QJsonObject payload {{"address", bech32Address},};
+    auto resp= new Response(nam->post(request,QJsonDocument(payload).toJson()),this);
+    connect(resp,&Response::returned,this,[=](){resp->deleteLater();});
+}
 void Client::send_block(const qblocks::Block& block_)
 {
     auto node_block_=new Node_block(block_);
