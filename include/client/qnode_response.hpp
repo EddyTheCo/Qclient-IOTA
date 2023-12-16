@@ -17,7 +17,7 @@ namespace qiota{
 	{
 		Q_OBJECT
 		public:
-			Response(QNetworkReply *thereply);
+            Response(QNetworkReply *thereply,QObject *parent=nullptr);
 			void fill();
 			void error_found(QNetworkReply::NetworkError code);
 		signals:

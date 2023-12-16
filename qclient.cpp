@@ -12,28 +12,28 @@ Client::Client(QObject *parent):QObject(parent),
         qDebug()<<id.toHexString();
     });
 };
-void Client::set_node_address(const QUrl node_address_m)
+void Client::setNodeAddress(const QUrl& nodeAddress)
 {
 
-    if((node_address_m!=rest_node_address_||state_!=Connected)&&node_address_m.isValid())
+    if((m_nodeAddress!=nodeAddress||m_state!=Connected)&&nodeAddress.isValid())
     {
-        set_State(Disconnected);
-        rest_node_address_=node_address_m;
+        setState(Disconnected);
+        m_nodeAddress=nodeAddress;
         auto info=get_api_core_v2_info();
-        QObject::connect(info,&Node_info::finished,this,[=]( ){
+        connect(info,&Node_info::finished,this,[=, this]( ){
 
             if(info->isHealthy)
             {
-                set_State(Connected);
+                setState(Connected);
             }
             info->deleteLater();
         });
     }
 }
 
-Response*  Client::get_reply_rest(const QString& path,const QString& query)const
+Response*  Client::get_reply_rest(const QString& path,const QString& query)
 {
-    QUrl InfoUrl=rest_node_address_;
+    QUrl InfoUrl=m_nodeAddress;
     InfoUrl.setPath(path);
     if(!query.isNull())InfoUrl.setQuery(query);
     auto request=QNetworkRequest(InfoUrl);
@@ -41,58 +41,62 @@ Response*  Client::get_reply_rest(const QString& path,const QString& query)const
     if(!JWT.isNull())request.setRawHeader(QByteArray("Authorization"),
                                           QByteArray(("Bearer " + JWT).toUtf8()));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    return new Response(nam->get(request));
+    return new Response(nam->get(request),this);
 }
-Response*  Client::post_reply_rest(const QString& path, const QJsonObject& payload)const
+Response*  Client::post_reply_rest(const QString& path, const QJsonObject& payload)
 {
-    QUrl InfoUrl=rest_node_address_;
+    QUrl InfoUrl=m_nodeAddress;
     InfoUrl.setPath(path);
     auto request=QNetworkRequest(InfoUrl);
     request.setAttribute(QNetworkRequest::UseCredentialsAttribute,false);
     if(!JWT.isNull())request.setRawHeader(QByteArray("Authorization"),
                                           QByteArray("Bearer ").append(JWT.toUtf8()));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    return new Response(nam->post(request,QJsonDocument(payload).toJson()));
+    return new Response(nam->post(request,QJsonDocument(payload).toJson()),this);
 }
 Node_info* Client::get_api_core_v2_info(void)
 {
-    auto resp=get_reply_rest("/api/core/v2/info");
-
-    connect(resp, &Response::returned,this,[=]( QJsonValue data ){
-        info_=data.toObject();
-    });
-
-    return new Node_info(resp);
+    return new Node_info(get_reply_rest("/api/core/v2/info"));
 }
-Node_tips* Client::get_api_core_v2_tips()const
+Node_tips* Client::get_api_core_v2_tips()
 {
     return new Node_tips(get_reply_rest("/api/core/v2/tips"));
 }
-Node_blockID *Client::post_api_core_v2_blocks(const QJsonObject& block_)const
+Node_blockID *Client::post_api_core_v2_blocks(const QJsonObject& block_)
 {
     return new Node_blockID(post_reply_rest("/api/core/v2/blocks",block_));
 }
-Node_block* Client::get_api_core_v2_blocks_blockId(const QString& blockId)const
+Node_block* Client::get_api_core_v2_blocks_blockId(const QString& blockId)
 {
     return new Node_block(get_reply_rest("/api/core/v2/blocks/"+blockId));
 }
-
+void Client::getFundsFromFaucet(const QString& bech32Address, const QUrl & faucetAddress)
+{    
+    QUrl InfoUrl=faucetAddress;
+    InfoUrl.setPath("/api/enqueue");
+    auto request=QNetworkRequest(InfoUrl);
+    request.setAttribute(QNetworkRequest::UseCredentialsAttribute,false);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    const QJsonObject payload {{"address", bech32Address},};
+    auto resp= new Response(nam->post(request,QJsonDocument(payload).toJson()),this);
+    connect(resp,&Response::returned,this,[=](){resp->deleteLater();});
+}
 void Client::send_block(const qblocks::Block& block_)
 {
     auto node_block_=new Node_block(block_);
-    connect(node_block_,&Node_block::finished,this,[=](){
+    connect(node_block_,&Node_block::finished,this,[=,this](){
         auto blockid_=Client::post_api_core_v2_blocks(node_block_->block_.get_Json());
         node_block_->deleteLater();
-        QObject::connect(blockid_,&Node_blockID::finished,this,[=](){
+        connect(blockid_,&Node_blockID::finished,this,[=,this](){
             emit last_blockid(blockid_->id);
             blockid_->deleteLater();
         });
     });
     auto info_=get_api_core_v2_info();
-    connect(info_,&Node_info::finished,this,[=](){
+    connect(info_,&Node_info::finished,this,[=,this](){
         node_block_->set_pv(info_->protocol_version);
         auto tips_=get_api_core_v2_tips();
-        connect(tips_,&Node_tips::finished,this,[=](){
+        connect(tips_,&Node_tips::finished,this,[=,this](){
             node_block_->set_parents(tips_->tips);
             if(info_->min_pow_score&&!(info_->pow_feature))
             {
@@ -103,7 +107,7 @@ void Client::send_block(const qblocks::Block& block_)
                     node_block_->set_nonce(nonce);
                     nfinder_->deleteLater();
                 });
-                connect(nfinder_,&qpow::nonceFinder::nonce_not_found,this,[=](){
+                connect(nfinder_,&qpow::nonceFinder::nonce_not_found,this,[=,this](){
                     nfinder_->deleteLater();
                     node_block_->deleteLater();                    
                     send_block(block_);
@@ -123,15 +127,15 @@ void Client::send_block(const qblocks::Block& block_)
 
 
 }
-Response* Client::get_api_core_v2_blocks_blockId_metadata(const QString& blockId)const
+Response* Client::get_api_core_v2_blocks_blockId_metadata(const QString& blockId)
 {
     return get_reply_rest("/api/core/v2/blocks/"+blockId+"/metadata");
 }
-Response* Client::get_api_core_v2_outputs_outputId(const QString& outputId)const
+Response* Client::get_api_core_v2_outputs_outputId(const QString& outputId)
 {
     return get_reply_rest("/api/core/v2/outputs/"+outputId);
 }
-Response* Client::get_api_core_v2_outputs_outputId_metadata(const QString& outputId)const
+Response* Client::get_api_core_v2_outputs_outputId_metadata(const QString& outputId)
 {
     return get_reply_rest("/api/core/v2/outputs/"+outputId+"/metadata");
 }

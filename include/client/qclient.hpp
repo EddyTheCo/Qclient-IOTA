@@ -1,8 +1,4 @@
 #pragma once
-/**
- *  https://github.com/iotaledger/tips/blob/main/tips/TIP-0025/tip-0025.md
- *
- **/
 #include"block/qblock.hpp"
 #include"client/qnode_response.hpp"
 #include"client/qnode_info.hpp"
@@ -27,12 +23,14 @@ namespace qiota{
 				Connected
 			};
 			void send_block(const qblocks::Block& block_);
-
+            void getFundsFromFaucet(const QString& bech32Address,
+                                           const QUrl & faucetAddress=QUrl("https://faucet.testnet.shimmer.network"));
 			template<qblocks::Output::types outtype>
-				void get_outputs(Node_outputs* node_outs_,const QString& filter)const
+                Node_outputs* get_outputs(const QString& filter)
 				{
 					auto outputids=get_api_indexer_v1_outputs<outtype>(filter);
-					QObject::connect(outputids,&Response::returned,node_outs_,[=](QJsonValue data ){
+                    auto node_outs_=new Node_outputs(this);
+                    connect(outputids,&Response::returned,node_outs_,[=,this](QJsonValue data ){
 							auto transid=data["items"].toArray();
 							node_outs_->size_+=transid.size();
 							outputids->deleteLater();
@@ -47,50 +45,48 @@ namespace qiota{
 							}
 
 							});
+                    return node_outs_;
 
 				}
 			static quint64 get_deposit(const std::shared_ptr<const qblocks::Output>& out,const Node_info *info)
 			{
 				return out->min_deposit_of_output(info->vByteFactorKey,info->vByteFactorData,info->vByteCost);
 			}
-			void set_node_address(const QUrl node_address_m);
-			QUrl get_node_address(void)const{return rest_node_address_;}
-			QString get_jwt(void)const{return JWT;}
-			void set_jwt(const QString jwt_m){JWT=jwt_m;}
+
+            void setNodeAddress(const QUrl &nodeAddress);
+            QUrl getNodeAddress(void)const{return m_nodeAddress;}
+            QString JWT;
 			Node_info* get_api_core_v2_info(void);
-			ClientState state(void)const{return state_;}
-			QJsonObject info()const{return info_;}
+            ClientState state(void)const{return m_state;}
 
 
-		signals:
-			void last_blockid(qblocks::c_array id)const;
-			void stateChanged();
+
+signals:
+			void last_blockid(qblocks::c_array id);
+            void stateChanged();
 
 		private:
-			void set_State(ClientState state_m){if(state_m!=state_){state_=state_m;emit stateChanged();}}
-            Response*  get_reply_rest(const QString& path, const QString &query=QString())const;
-			Response*  post_reply_rest(const QString& path, const QJsonObject& payload )const;
+            void setState(ClientState state){if(m_state!=state){m_state=state;emit stateChanged();}}
+			Response*  get_reply_rest(const QString& path, const QString &query=QString());
+            Response*  post_reply_rest(const QString& path, const QJsonObject& payload );
 
 
-			Node_tips* get_api_core_v2_tips(void)const;
-			Node_blockID* post_api_core_v2_blocks(const QJsonObject& block_)const;
-			Node_block* get_api_core_v2_blocks_blockId(const QString& blockId)const;
-			Response* get_api_core_v2_blocks_blockId_metadata(const QString& blockId)const;
+			Node_tips* get_api_core_v2_tips(void);
+            Node_blockID* post_api_core_v2_blocks(const QJsonObject& block_);
+			Node_block* get_api_core_v2_blocks_blockId(const QString& blockId);
+			Response* get_api_core_v2_blocks_blockId_metadata(const QString& blockId);
 
-			Response* get_api_core_v2_outputs_outputId(const QString& outputId)const;
-			Response* get_api_core_v2_outputs_outputId_metadata(const QString& outputId)const;
+			Response* get_api_core_v2_outputs_outputId(const QString& outputId);
+			Response* get_api_core_v2_outputs_outputId_metadata(const QString& outputId);
 			template<qblocks::Output::types outtype>
-				Response* get_api_indexer_v1_outputs(const QString& filter)const
+				Response* get_api_indexer_v1_outputs(const QString& filter)
 				{
-					return get_reply_rest("/api/indexer/v1/outputs/"+qblocks::Output::typesstr[outtype],filter);
+                    return get_reply_rest("/api/indexer/v1/outputs"+qblocks::Output::typesstr[outtype],filter);
 				}
 
-
-			QUrl rest_node_address_;
+            QUrl m_nodeAddress;
 			QNetworkAccessManager* nam;
-			QString JWT;
-			ClientState state_;
-			QJsonObject info_;
+            ClientState m_state;
 	};
 
 }
