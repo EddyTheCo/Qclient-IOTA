@@ -30,7 +30,7 @@ namespace qiota{
 				{
 					auto outputids=get_api_indexer_v1_outputs<outtype>(filter);
                     auto node_outs_=new Node_outputs(this);
-                    connect(outputids,&Response::returned,node_outs_,[=,this](QJsonValue data ){
+                    connect(outputids,&Response::returned,node_outs_,[=](QJsonValue data ){
 							auto transid=data["items"].toArray();
 							node_outs_->size_+=transid.size();
 							outputids->deleteLater();
