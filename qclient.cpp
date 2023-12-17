@@ -20,7 +20,7 @@ void Client::setNodeAddress(const QUrl& nodeAddress)
         setState(Disconnected);
         m_nodeAddress=nodeAddress;
         auto info=get_api_core_v2_info();
-        connect(info,&Node_info::finished,this,[=, this]( ){
+        connect(info,&Node_info::finished,this,[=]( ){
 
             if(info->isHealthy)
             {
@@ -84,19 +84,19 @@ void Client::getFundsFromFaucet(const QString& bech32Address, const QUrl & fauce
 void Client::send_block(const qblocks::Block& block_)
 {
     auto node_block_=new Node_block(block_);
-    connect(node_block_,&Node_block::finished,this,[=,this](){
+    connect(node_block_,&Node_block::finished,this,[=](){
         auto blockid_=Client::post_api_core_v2_blocks(node_block_->block_.get_Json());
         node_block_->deleteLater();
-        connect(blockid_,&Node_blockID::finished,this,[=,this](){
+        connect(blockid_,&Node_blockID::finished,this,[=](){
             emit last_blockid(blockid_->id);
             blockid_->deleteLater();
         });
     });
     auto info_=get_api_core_v2_info();
-    connect(info_,&Node_info::finished,this,[=,this](){
+    connect(info_,&Node_info::finished,this,[=](){
         node_block_->set_pv(info_->protocol_version);
         auto tips_=get_api_core_v2_tips();
-        connect(tips_,&Node_tips::finished,this,[=,this](){
+        connect(tips_,&Node_tips::finished,this,[=](){
             node_block_->set_parents(tips_->tips);
             if(info_->min_pow_score&&!(info_->pow_feature))
             {
@@ -107,7 +107,7 @@ void Client::send_block(const qblocks::Block& block_)
                     node_block_->set_nonce(nonce);
                     nfinder_->deleteLater();
                 });
-                connect(nfinder_,&qpow::nonceFinder::nonce_not_found,this,[=,this](){
+                connect(nfinder_,&qpow::nonceFinder::nonce_not_found,this,[=](){
                     nfinder_->deleteLater();
                     node_block_->deleteLater();                    
                     send_block(block_);

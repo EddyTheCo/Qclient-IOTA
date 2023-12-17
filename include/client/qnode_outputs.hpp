@@ -1,6 +1,7 @@
 #pragma once
 
-#include"block/qblock.hpp"
+#include"block/qoutput_metadata_response.hpp"
+#include"block/qoutputs.hpp"
 #include"client/qnode_response.hpp"
 #include <QJsonValue>
 namespace qiota{
