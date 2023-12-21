@@ -12,7 +12,6 @@ namespace qiota{
 		Q_OBJECT
 		public:
 			Node_info(Response*);
-			QJsonObject amount_json(const quint64& amount_);
 
 			quint64 network_id_;
 			quint8  protocol_version,decimals;
