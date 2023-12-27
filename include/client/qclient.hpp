@@ -25,6 +25,7 @@ namespace qiota{
 			void send_block(const qblocks::Block& block_);
             void getFundsFromFaucet(const QString& bech32Address,
                                            const QUrl & faucetAddress=QUrl("https://faucet.testnet.shimmer.network"));
+            Response* get_api_core_v2_outputs_outputId(const QString& outputId);
 			template<qblocks::Output::types outtype>
                 Node_outputs* get_outputs(const QString& filter)
 				{
@@ -76,7 +77,7 @@ signals:
 			Node_block* get_api_core_v2_blocks_blockId(const QString& blockId);
 			Response* get_api_core_v2_blocks_blockId_metadata(const QString& blockId);
 
-			Response* get_api_core_v2_outputs_outputId(const QString& outputId);
+
 			Response* get_api_core_v2_outputs_outputId_metadata(const QString& outputId);
 			template<qblocks::Output::types outtype>
 				Response* get_api_indexer_v1_outputs(const QString& filter)

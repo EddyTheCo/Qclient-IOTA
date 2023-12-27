@@ -6,7 +6,7 @@
 namespace qiota{
 
 Client::Client(QObject *parent):QObject(parent),
-    nam(new QNetworkAccessManager(this))
+    nam(new QNetworkAccessManager(this)),m_state(Disconnected)
 {
     connect(this,&Client::last_blockid,this,[=](qblocks::c_array id){
         qDebug()<<id.toHexString();
