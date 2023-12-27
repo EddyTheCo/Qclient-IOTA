@@ -25,7 +25,7 @@ include(GNUInstallDirs)
 FetchContent_Declare(
     qblock
     GIT_REPOSITORY https://github.com/EddyTheCo/Qblock-IOTA.git
-    GIT_TAG develop
+    GIT_TAG v0.3.2
     FIND_PACKAGE_ARGS 0.3 CONFIG
 )
 FetchContent_MakeAvailable(qblock)
