@@ -16,7 +16,7 @@ namespace qiota{
 			quint64 network_id_;
 			quint8  protocol_version,decimals;
 			quint32 min_pow_score;
-			QString bech32Hrp,unit,subunit;
+            QString bech32Hrp,unit,subunit,networkName;
 			quint64 vByteFactorKey,vByteFactorData,vByteCost;
 			bool isHealthy,pow_feature;
 			void fill(QJsonValue data);
@@ -24,7 +24,6 @@ namespace qiota{
 			void finished(void);
 		private:
 			Response* response_;
-			QByteArray network_name_;
 	};
 
 

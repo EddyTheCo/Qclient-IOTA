@@ -12,8 +12,8 @@ Node_info::Node_info(Response* resp):response_(resp),pow_feature(false),isHealth
 }
 void Node_info::fill(QJsonValue data)
 {
-    network_name_=QByteArray(data["protocol"].toObject()["networkName"].toString().toLatin1());
-    QByteArray networkId_hash=QCryptographicHash::hash(network_name_,QCryptographicHash::Blake2b_256);
+    networkName=data["protocol"].toObject()["networkName"].toString();
+    QByteArray networkId_hash=QCryptographicHash::hash(networkName.toUtf8(),QCryptographicHash::Blake2b_256);
     networkId_hash.truncate(8);
     auto buffer=QDataStream(&networkId_hash,QIODevice::ReadOnly);
     buffer.setByteOrder(QDataStream::LittleEndian);
