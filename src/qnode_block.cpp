@@ -1,6 +1,5 @@
 #include"client/qnode_block.hpp"
 #include<QJsonObject>
-#include<QJsonDocument>
 #include<QDebug>
 namespace qiota{
 
@@ -31,7 +30,6 @@ void Node_block::set_parents(const std::vector<qblocks::Block_ID>& parents_m)
 void Node_block::Node_block::set_nonce(const quint64& nonce_m){
 
     block_.set_nonce(nonce_m);
-    qDebug().noquote()<<"block:\n"<<QString(QJsonDocument(block_.get_Json()).toJson(QJsonDocument::Indented));
     emit finished();
 };
 }

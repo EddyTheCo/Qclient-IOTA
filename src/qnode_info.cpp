@@ -12,8 +12,8 @@ Node_info::Node_info(Response* resp):response_(resp),pow_feature(false),isHealth
 }
 void Node_info::fill(QJsonValue data)
 {
-    network_name_=QByteArray(data["protocol"].toObject()["networkName"].toString().toLatin1());
-    QByteArray networkId_hash=QCryptographicHash::hash(network_name_,QCryptographicHash::Blake2b_256);
+    networkName=data["protocol"].toObject()["networkName"].toString();
+    QByteArray networkId_hash=QCryptographicHash::hash(networkName.toUtf8(),QCryptographicHash::Blake2b_256);
     networkId_hash.truncate(8);
     auto buffer=QDataStream(&networkId_hash,QIODevice::ReadOnly);
     buffer.setByteOrder(QDataStream::LittleEndian);
@@ -43,28 +43,6 @@ void Node_info::fill(QJsonValue data)
     response_->deleteLater();
 }
 
-QJsonObject Node_info::amount_json(const quint64& amount_)
-{
-    QJsonObject shortValue;
-    shortValue.insert("unit",unit);
-    shortValue.insert("value",QString::number(amount_*1.0/std::pow(10,decimals),'g', 5));
 
-    QJsonObject largeValue;
-    largeValue.insert("unit",subunit);
-    largeValue.insert("value",QString::number(amount_));
-    QJsonObject var;
-    var.insert("shortValue",shortValue);
-    var.insert("largeValue",largeValue);
-
-    if(amount_>std::pow(10,decimals*0.8))
-    {
-        var.insert("default",0);
-    }
-    else
-    {
-        var.insert("default",1);
-    }
-    return var;
-}
 
 }
