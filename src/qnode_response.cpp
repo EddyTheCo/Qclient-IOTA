@@ -20,7 +20,6 @@ void Response::fill()
     else
     {
         reply->deleteLater();
-        deleteLater();
     }
 
 }
