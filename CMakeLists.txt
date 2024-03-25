@@ -61,8 +61,8 @@ if (Qt6_FOUND)
 	target_include_directories(client PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 		"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/Esterv/>")
 
-	target_link_libraries(client PUBLIC qblock )
-	target_link_libraries(client PRIVATE qpow)
+	target_link_libraries(client PUBLIC QtIotaBlock::qblock )
+	target_link_libraries(client PRIVATE QtIotaPow::qpow)
 
 
 	install(TARGETS client
