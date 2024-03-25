@@ -37,7 +37,7 @@ FetchContent_Declare(
 	FIND_PACKAGE_ARGS MAJOR.MINOR CONFIG  
 	)
 FetchContent_MakeAvailable(IotaClient)
-target_link_libraries(<target> <PRIVATE|PUBLIC|INTERFACE> IotaClient::client)
+target_link_libraries(<target> <PRIVATE|PUBLIC|INTERFACE> IotaClient::qclient)
 ```
 
 

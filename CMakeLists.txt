@@ -46,26 +46,26 @@ if (Qt6_FOUND)
 	qt_standard_project_setup()
 
 
-	add_library(client qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qnode_tips.cpp src/qnode_blockId.cpp src/qnode_block.cpp src/qnode_outputs.cpp
+	add_library(qclient qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qnode_tips.cpp src/qnode_blockId.cpp src/qnode_block.cpp src/qnode_outputs.cpp
 		include/client/qnode_response.hpp include/client/qnode_info.hpp include/client/qnode_tips.hpp include/client/qclient.hpp include/client/qnode_blockId.hpp include/client/qnode_block.hpp
 		include/client/qnode_outputs.hpp)
 
-	add_library(${PROJECT_NAME}::client ALIAS client)
-	set_target_properties(client PROPERTIES VERSION ${VERSION} SOVERSION ${VERSION_MAJOR})
+	add_library(${PROJECT_NAME}::qclient ALIAS qclient)
+	set_target_properties(qclient PROPERTIES VERSION ${VERSION} SOVERSION ${VERSION_MAJOR})
 
-	target_compile_definitions(client PRIVATE WINDOWS_QCLIENT)
+	target_compile_definitions(qclient PRIVATE WINDOWS_QCLIENT)
 
-	target_link_libraries(client PUBLIC  Qt6::Core Qt6::Network)
+	target_link_libraries(qclient PUBLIC  Qt6::Core Qt6::Network)
 
 
-	target_include_directories(client PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	target_include_directories(qclient PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 		"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/Esterv/>")
 
-	target_link_libraries(client PUBLIC QtIotaBlock::qblock )
-	target_link_libraries(client PRIVATE QtIotaPow::qpow)
+	target_link_libraries(qclient PUBLIC QtIotaBlock::qblock )
+	target_link_libraries(qclient PRIVATE QtIotaPow::qpow)
 
 
-	install(TARGETS client
+	install(TARGETS qclient
 		EXPORT ${PROJECT_NAME}-config
 		DESTINATION ${CMAKE_INSTALL_LIBDIR}
 		COMPONENT client
