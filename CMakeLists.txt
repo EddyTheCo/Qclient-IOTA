@@ -5,7 +5,7 @@ include(FetchContent)
 FetchContent_Declare(
 	ccommon
 	GIT_REPOSITORY https://github.com/EddyTheCo/Common.git
-	GIT_TAG v0.3.1
+	GIT_TAG v0.4.0
 	)
 FetchContent_MakeAvailable(ccommon)
 version_from_git(
@@ -26,7 +26,7 @@ include(GNUInstallDirs)
 FetchContent_Declare(
 	QtIotaBlock
 	GIT_REPOSITORY https://github.com/EddyTheCo/Qblock-IOTA.git
-	GIT_TAG develop
+	GIT_TAG v0.4.1
 	FIND_PACKAGE_ARGS 0.4 CONFIG
 	)
 FetchContent_MakeAvailable(QtIotaBlock)
@@ -35,7 +35,7 @@ FetchContent_MakeAvailable(QtIotaBlock)
 FetchContent_Declare(
 	QtIotaPow
 	GIT_REPOSITORY https://github.com/EddyTheCo/Qpow-IOTA.git
-	GIT_TAG develop
+	GIT_TAG v0.3.1
 	FIND_PACKAGE_ARGS 0.3 CONFIG
 	)
 FetchContent_MakeAvailable(QtIotaPow)
@@ -44,7 +44,7 @@ find_package(Qt6 COMPONENTS Core Network)
 
 if (Qt6_FOUND)
 	qt_standard_project_setup()
-	add_library(qclient qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qnode_tips.cpp src/qnode_blockId.cpp src/qnode_block.cpp src/qnode_outputs.cpp
+	add_library(qclient src/qclient.cpp src/qnode_response.cpp src/qnode_info.cpp src/qnode_tips.cpp src/qnode_blockId.cpp src/qnode_block.cpp src/qnode_outputs.cpp
 		include/client/qnode_response.hpp include/client/qnode_info.hpp include/client/qnode_tips.hpp include/client/qclient.hpp include/client/qnode_blockId.hpp include/client/qnode_block.hpp
 		include/client/qnode_outputs.hpp)
 
